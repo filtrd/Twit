@@ -1,6 +1,6 @@
 # microblog
 
-A minimal old skool Twitter-style social app written in plain PHP with SQLite.
+A minimal old-school microblogging social network written in plain PHP with SQLite.
 
 ## Features
 
@@ -18,11 +18,41 @@ A minimal old skool Twitter-style social app written in plain PHP with SQLite.
 - PHP 8.0+
 - PDO SQLite extension
 
+## Project structure
+
+```text
+microblog/
+├── index.php
+├── login.php
+├── register.php
+├── profile.php
+├── style.css
+│
+├── inc/
+│   ├── config.php
+│   ├── database.php
+│   ├── post.php
+│   ├── like.php
+│   └── logout.php
+│
+├── data/
+│   ├── .gitignore
+│   └── .gitkeep
+│
+├── README.md
+└── LICENSE
+```
+
+- Root PHP files are the public-facing pages.
+- `inc/` contains backend configuration, database code, and form/action handlers.
+- `data/` contains the local SQLite database and is ignored by Git.
+- `style.css` contains the current presentation layer.
+
 ## Run locally
 
 ```bash
-git clone git@github.com:filtrd/Twit.git
-cd Twit
+git clone git@github.com:filtrd/microblog.git
+cd microblog
 php -S localhost:8000
 ```
 
