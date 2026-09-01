@@ -1,5 +1,5 @@
 <?php
 
-$siteName = 'Twit';
+$siteName = 'Microblog';
 $siteUrl = 'http://localhost:8000';
 $maxPostLength = 280;
