@@ -1,6 +1,6 @@
-# Twit
+# microblog
 
-A minimal Twitter-style social app written in plain PHP with SQLite.
+A minimal old skool Twitter-style social app written in plain PHP with SQLite.
 
 ## Features
 
