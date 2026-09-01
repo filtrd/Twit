@@ -26,16 +26,17 @@ microblog/
 ├── login.php
 ├── register.php
 ├── profile.php
+├── logout.php
+├── post.php
+├── like.php
 │
 ├── assets/
 │   └── style.css
 │
 ├── inc/
 │   ├── config.php
-│   ├── database.php
-│   ├── post.php
-│   ├── like.php
-│   └── logout.php
+│   ├── functions.php
+│   └── database.php
 │
 ├── data/
 │   ├── .gitignore
@@ -45,9 +46,9 @@ microblog/
 └── LICENSE
 ```
 
-- Root PHP files are the public-facing pages.
+- Root PHP files are the public-facing pages and action endpoints.
 - `assets/` contains frontend assets such as CSS.
-- `inc/` contains backend configuration, database code, and form/action handlers.
+- `inc/` contains internal configuration, helper functions, and database code.
 - `data/` contains the local SQLite database and is ignored by Git.
 
 ## Run locally
@@ -60,4 +61,4 @@ php -S localhost:8000
 
 Open http://localhost:8000 in your browser.
 
-The SQLite database is created at `data/twit.sqlite` on first request and is ignored by Git.
+The SQLite database is created at `data/microblog.sqlite` on first request and is ignored by Git.
