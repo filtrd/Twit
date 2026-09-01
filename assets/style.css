@@ -2,12 +2,16 @@
     box-sizing: border-box;
 }
 
+html {
+    font-size: 14px;
+}
+
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: 14px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: #fff;
     color: #111;
+    line-height: 1.5;
 }
 
 a {
@@ -20,40 +24,38 @@ a:hover {
 }
 
 .wrap {
-    width: min(680px, calc(100% - 32px));
+    width: min(1100px, calc(100% - 40px));
     margin: 0 auto;
 }
 
 .topbar {
     background: #fff;
     border-bottom: 1px solid #ddd;
-    position: sticky;
-    top: 0;
-    z-index: 2;
 }
 
 .topbar .wrap {
-    min-height: 58px;
+    min-height: 72px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .logo {
-    font-size: 18px;
-    font-weight: 800;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 16px;
+    font-weight: 700;
 }
 
 nav {
     display: flex;
-    gap: 16px;
+    gap: 32px;
     align-items: center;
 }
 
 button,
 .button {
     border: 0;
-    padding: 4px 0;
+    padding: 0;
     background: transparent;
     color: #111;
     cursor: pointer;
@@ -63,7 +65,7 @@ button,
 
 button:hover,
 .button:hover {
-    opacity: .6;
+    opacity: .55;
 }
 
 .inline {
@@ -71,21 +73,37 @@ button:hover,
 }
 
 main.wrap {
-    padding: 24px 0 60px;
+    padding: 56px 0 80px;
 }
 
-.composer,
-.hero,
-.post,
-.profile,
-.card {
+.hero {
+    padding: 0;
+    margin-bottom: 36px;
+    border: 0;
+    background: transparent;
+}
+
+.hero h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    line-height: 1.2;
+}
+
+.hero p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.composer {
+    margin-bottom: 0;
+    padding: 18px 16px 12px;
+    border: 1px solid #bbb;
     background: #fff;
-    border: 1px solid #ddd;
-    padding: 20px;
-    margin-bottom: 16px;
 }
 
 .composer textarea {
+    display: block;
     width: 100%;
     min-height: 100px;
     resize: vertical;
@@ -94,25 +112,46 @@ main.wrap {
     background: transparent;
     color: inherit;
     font: inherit;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .composer textarea::placeholder {
-    color: #999;
+    color: #888;
 }
 
 .composer div {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #777;
+    margin-top: 8px;
+    color: #555;
     font-size: 11px;
+}
+
+.composer button {
+    font-weight: 600;
+}
+
+.post {
+    margin: 0;
+    padding: 28px 0;
+    border: 0;
+    border-top: 1px solid #ddd;
+    background: transparent;
+}
+
+.post:first-child {
+    margin-top: 0;
 }
 
 .post-head {
     display: flex;
     gap: 10px;
-    align-items: center;
+    align-items: baseline;
+}
+
+.post-head strong {
+    font-size: 14px;
 }
 
 .post-head time {
@@ -121,36 +160,43 @@ main.wrap {
 }
 
 .post p {
-    white-space: normal;
-    line-height: 1.5;
-    margin: 12px 0;
+    margin: 8px 0 12px;
     font-size: 14px;
+    line-height: 1.55;
 }
 
 .post-actions {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     align-items: center;
-    color: #777;
+    color: #666;
     font-size: 12px;
 }
 
 .post-actions button {
-    background: transparent;
     color: inherit;
-    padding: 2px 0;
-    border: 0;
+    font-size: 12px;
+}
+
+.post-actions form {
+    display: inline;
 }
 
 .auth {
-    width: min(420px, calc(100% - 32px));
-    margin: 60px auto;
+    width: min(420px, calc(100% - 40px));
+    margin: 80px auto;
 }
 
 .auth > .logo {
     display: block;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 28px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 24px;
 }
 
 .card form {
@@ -167,7 +213,7 @@ label {
 
 input {
     width: 100%;
-    padding: 11px;
+    padding: 10px;
     border: 1px solid #ccc;
     background: #fff;
     color: #111;
@@ -180,21 +226,32 @@ input:focus {
 }
 
 .error {
-    background: #fff0f0;
-    color: #a00;
+    margin-bottom: 16px;
     padding: 10px;
+    background: #fff4f4;
+    color: #900;
     font-size: 12px;
 }
 
 .empty {
+    padding: 40px 0;
     text-align: center;
     color: #777;
-    padding: 30px;
     font-size: 13px;
+}
+
+.profile {
+    padding: 0 0 28px;
+    margin-bottom: 0;
+    border: 0;
+    border-bottom: 1px solid #ddd;
+    background: transparent;
 }
 
 .profile h1 {
     margin: 0 0 4px;
+    font-size: 22px;
+    line-height: 1.25;
 }
 
 .profile p {
@@ -202,8 +259,40 @@ input:focus {
     color: #777;
 }
 
+footer {
+    border-top: 1px solid #ddd;
+}
+
+footer .wrap {
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #555;
+    font-size: 12px;
+}
+
 @media (max-width: 600px) {
     .wrap {
-        width: min(100% - 24px, 680px);
+        width: min(100% - 24px, 1100px);
+    }
+
+    main.wrap {
+        padding-top: 36px;
+    }
+
+    nav {
+        gap: 16px;
+    }
+
+    .hero h1 {
+        font-size: 21px;
+    }
+
+    footer .wrap {
+        gap: 16px;
+        flex-direction: column;
+        justify-content: center;
+        padding: 20px 0;
     }
 }
