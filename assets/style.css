@@ -1,9 +1,42 @@
-* {
+/* Minimal modern reset */
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
 html {
     font-size: 14px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button,
+input,
+textarea {
+    margin: 0;
+}
+
+img,
+picture,
+svg,
+canvas {
+    display: block;
+    max-width: 100%;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
