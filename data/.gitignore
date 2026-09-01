@@ -1,3 +1,6 @@
 *.sqlite
 *.sqlite3
 *.db
+*-journal
+*-wal
+*-shm
