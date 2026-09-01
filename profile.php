@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/inc/database.php';
 
 $username = trim($_GET['u'] ?? '');
 $stmt = db()->prepare('SELECT id, username, created_at FROM users WHERE username = ?');
