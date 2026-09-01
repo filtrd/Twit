@@ -23,7 +23,7 @@ function liked_by_me(int $postId): bool {
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Twit</title><link rel="stylesheet" href="style.css">
+<title>Twit</title><link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <header class="topbar"><div class="wrap"><a class="logo" href="index.php">Twit</a><nav>
