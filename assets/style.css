@@ -1,4 +1,7 @@
-/* Minimal modern reset */
+/* ----------------------------------------
+   Reset
+   ---------------------------------------- */
+
 *,
 *::before,
 *::after {
@@ -7,16 +10,11 @@
 
 html {
     font-size: 14px;
-    line-height: 1.5;
     -webkit-text-size-adjust: 100%;
 }
 
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #fff;
-    color: #111;
-    line-height: 1.5;
 }
 
 button,
@@ -32,6 +30,18 @@ svg,
 canvas {
     display: block;
     max-width: 100%;
+}
+
+
+/* ----------------------------------------
+   Microblog
+   ---------------------------------------- */
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #fff;
+    color: #111;
+    line-height: 1.5;
 }
 
 a {
