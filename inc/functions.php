@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-const DB_PATH = __DIR__ . '/../data/twit.sqlite';
+const DB_PATH = __DIR__ . '/../data/microblog.sqlite';
 
 function db(): PDO
 {
@@ -41,7 +41,7 @@ function require_login(): array
 {
     $user = current_user();
     if (!$user) {
-        header('Location: ../login.php');
+        header('Location: login.php');
         exit;
     }
     return $user;
