@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/inc/database.php';
 
 if (current_user()) { header('Location: index.php'); exit; }
 $error = '';
