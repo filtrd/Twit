@@ -26,7 +26,9 @@ microblog/
 ├── login.php
 ├── register.php
 ├── profile.php
-├── style.css
+│
+├── assets/
+│   └── style.css
 │
 ├── inc/
 │   ├── config.php
@@ -44,9 +46,9 @@ microblog/
 ```
 
 - Root PHP files are the public-facing pages.
+- `assets/` contains frontend assets such as CSS.
 - `inc/` contains backend configuration, database code, and form/action handlers.
 - `data/` contains the local SQLite database and is ignored by Git.
-- `style.css` contains the current presentation layer.
 
 ## Run locally
 
