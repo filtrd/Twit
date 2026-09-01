@@ -5,6 +5,7 @@
 body {
     margin: 0;
     font-family: system-ui, -apple-system, sans-serif;
+    font-size: 14px;
     background: #101010;
     color: #e8e8e8;
 }
@@ -39,7 +40,7 @@ a:hover {
 }
 
 .logo {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 800;
 }
 
@@ -51,17 +52,18 @@ nav {
 
 button,
 .button {
-    border: 1px solid #444;
-    padding: 9px 16px;
-    background: #e8e8e8;
-    color: #101010;
+    border: 0;
+    padding: 4px 0;
+    background: transparent;
+    color: #e8e8e8;
     cursor: pointer;
     font: inherit;
+    font-size: 13px;
 }
 
 button:hover,
 .button:hover {
-    opacity: .85;
+    opacity: .7;
 }
 
 .inline {
@@ -92,7 +94,7 @@ main.wrap {
     background: transparent;
     color: inherit;
     font: inherit;
-    font-size: 18px;
+    font-size: 15px;
 }
 
 .composer textarea::placeholder {
@@ -104,7 +106,7 @@ main.wrap {
     justify-content: space-between;
     align-items: center;
     color: #888;
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .post-head {
@@ -115,13 +117,14 @@ main.wrap {
 
 .post-head time {
     color: #777;
-    font-size: 13px;
+    font-size: 11px;
 }
 
 .post p {
     white-space: normal;
     line-height: 1.5;
     margin: 12px 0;
+    font-size: 14px;
 }
 
 .post-actions {
@@ -129,14 +132,14 @@ main.wrap {
     gap: 12px;
     align-items: center;
     color: #888;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .post-actions button {
     background: transparent;
     color: inherit;
-    padding: 4px 8px;
-    border: 1px solid #333;
+    padding: 2px 0;
+    border: 0;
 }
 
 .auth {
@@ -159,6 +162,7 @@ label {
     display: grid;
     gap: 6px;
     font-weight: 600;
+    font-size: 13px;
 }
 
 input {
@@ -168,6 +172,7 @@ input {
     background: #111;
     color: #e8e8e8;
     font: inherit;
+    font-size: 13px;
 }
 
 input:focus {
@@ -178,12 +183,14 @@ input:focus {
     background: #2a1515;
     color: #ffb0b0;
     padding: 10px;
+    font-size: 12px;
 }
 
 .empty {
     text-align: center;
     color: #777;
     padding: 30px;
+    font-size: 13px;
 }
 
 .profile h1 {
