@@ -5,7 +5,7 @@ require_once __DIR__ . '/inc/config.php';
 
 $user = current_user();
 $stmt = db()->query(<<<'SQL'
-SELECT p.id, p.content, p.created_at, u.id AS user_id, u.username,
+SELECT p.id, p.content, p.image_path, p.created_at, u.id AS user_id, u.username,
        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count
 FROM posts p
 JOIN users u ON u.id = p.user_id
@@ -31,7 +31,7 @@ function liked_by_me(int $postId): bool {
     <div class="wrap">
         <a class="logo" href="index.php"><?= e($siteName) ?></a>
         <nav>
-          <a href="./">Home</a>
+            <a href="./">Home</a>
             <?php if ($user): ?>
                 <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
                 <form class="inline" method="post" action="logout.php">
@@ -54,12 +54,39 @@ function liked_by_me(int $postId): bool {
         </section>
 
         <?php if ($user): ?>
-            <form class="composer" method="post" action="post.php">
-                <textarea name="content" maxlength="280" placeholder="What's happening?" required></textarea>
-                <div>
-                    <span><span id="char-count">280</span> characters left</span>
-                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                    <button class="button">Post</button>
+            <form class="composer" method="post" action="post.php" enctype="multipart/form-data">
+                <textarea name="content" maxlength="280" placeholder="What's happening?"></textarea>
+                <input type="file" id="image-upload" name="image" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+
+                <div class="composer-tools">
+                    <div class="composer-shortcuts">
+                        <button type="button" class="icon-button" id="image-button" aria-label="Add image" title="Add image">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1"></rect><circle cx="8" cy="9" r="1.5"></circle><path d="M4 17l5-5 3.5 3.5 2.5-2.5 5 5"></path></svg>
+                        </button>
+                        <button type="button" class="icon-button" id="emoji-button" aria-label="Add emoji" title="Add emoji">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="9" cy="10" r="1"></circle><circle cx="15" cy="10" r="1"></circle><path d="M8.5 14.5c1 1.5 2.2 2.25 3.5 2.25s2.5-.75 3.5-2.25"></path></svg>
+                        </button>
+                        <div class="emoji-picker" id="emoji-picker" hidden>
+                            <button type="button">😀</button>
+                            <button type="button">😂</button>
+                            <button type="button">❤️</button>
+                            <button type="button">👍</button>
+                            <button type="button">🎉</button>
+                            <button type="button">🔥</button>
+                            <button type="button">🚀</button>
+                            <button type="button">😊</button>
+                            <button type="button">😎</button>
+                            <button type="button">🤔</button>
+                            <button type="button">👏</button>
+                            <button type="button">🙌</button>
+                        </div>
+                    </div>
+                    <div class="composer-meta">
+                        <span id="selected-image"></span>
+                        <span><span id="char-count">280</span> characters left</span>
+                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                        <button class="button">Post</button>
+                    </div>
                 </div>
             </form>
         <?php endif; ?>
@@ -71,7 +98,12 @@ function liked_by_me(int $postId): bool {
                         <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
                         <time><?= e(formatPostDate($post['created_at'])) ?></time>
                     </div>
-                    <p><?= nl2br(e($post['content'])) ?></p>
+                    <?php if ($post['content'] !== ''): ?>
+                        <p><?= nl2br(e($post['content'])) ?></p>
+                    <?php endif; ?>
+                    <?php if (!empty($post['image_path'])): ?>
+                        <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
+                    <?php endif; ?>
                     <div class="post-actions">
                         <span>♥ <?= (int)$post['like_count'] ?></span>
                         <?php if ($user): ?>
@@ -106,14 +138,47 @@ function liked_by_me(int $postId): bool {
 <script>
 const textarea = document.querySelector('textarea[name="content"]');
 const counter = document.getElementById('char-count');
+const imageButton = document.getElementById('image-button');
+const imageUpload = document.getElementById('image-upload');
+const selectedImage = document.getElementById('selected-image');
+const emojiButton = document.getElementById('emoji-button');
+const emojiPicker = document.getElementById('emoji-picker');
 
 function updateCounter() {
-    counter.textContent = 280 - textarea.value.length;
+    if (textarea && counter) {
+        counter.textContent = 280 - textarea.value.length;
+    }
 }
 
 if (textarea && counter) {
     textarea.addEventListener('input', updateCounter);
     updateCounter();
+}
+
+if (imageButton && imageUpload) {
+    imageButton.addEventListener('click', () => imageUpload.click());
+    imageUpload.addEventListener('change', () => {
+        selectedImage.textContent = imageUpload.files.length ? imageUpload.files[0].name : '';
+    });
+}
+
+if (emojiButton && emojiPicker) {
+    emojiButton.addEventListener('click', () => {
+        emojiPicker.hidden = !emojiPicker.hidden;
+    });
+
+    emojiPicker.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const emoji = button.textContent;
+            textarea.value = textarea.value.slice(0, start) + emoji + textarea.value.slice(end);
+            textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+            textarea.focus();
+            updateCounter();
+            emojiPicker.hidden = true;
+        });
+    });
 }
 </script>
 </body>
