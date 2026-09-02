@@ -9,7 +9,7 @@ $stmt->execute([$username]);
 $profile = $stmt->fetch();
 if (!$profile) { http_response_code(404); exit('User not found'); }
 
-$stmt = db()->prepare('SELECT id, content, created_at FROM posts WHERE user_id = ? ORDER BY id DESC');
+$stmt = db()->prepare('SELECT id, content, image_path, created_at FROM posts WHERE user_id = ? ORDER BY id DESC');
 $stmt->execute([$profile['id']]);
 $posts = $stmt->fetchAll();
 
@@ -82,7 +82,12 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                         <strong>@<?= e($profile['username']) ?></strong>
                         <time><?= e(formatPostDate($post['created_at'])) ?></time>
                     </div>
-                    <p><?= nl2br(e($post['content'])) ?></p>
+                    <?php if ($post['content'] !== ''): ?>
+                        <p><?= nl2br(e($post['content'])) ?></p>
+                    <?php endif; ?>
+                    <?php if (!empty($post['image_path'])): ?>
+                        <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
+                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
 
