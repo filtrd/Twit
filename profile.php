@@ -80,7 +80,7 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                 <article class="post">
                     <div class="post-head">
                         <strong>@<?= e($profile['username']) ?></strong>
-                        <time><?= e($post['created_at']) ?></time>
+                        <time><?= e(formatPostDate($post['created_at'])) ?></time>
                     </div>
                     <p><?= nl2br(e($post['content'])) ?></p>
                 </article>
