@@ -50,14 +50,7 @@ $user = current_user();
             <?php foreach ($posts as $post): ?>
                 <article class="post">
                     <div class="post-head">
-                          <nav>
-            <?php if ($user): ?>
-                <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
-            <?php else: ?>
-                <a href="login.php">Log in</a>
-                <a class="button" href="register.php">Sign up</a>
-            <?php endif; ?>
-        </nav>      <strong>@<?= e($profile['username']) ?></strong>
+                              <strong>@<?= e($profile['username']) ?></strong>
                         <time><?= e($post['created_at']) ?></time>
                     </div>
                     <p><?= nl2br(e($post['content'])) ?></p>
