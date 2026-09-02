@@ -137,6 +137,7 @@ main {
 }
 
 .composer {
+    position: relative;
     margin-bottom: 0;
     padding: 18px 16px 12px;
     border: 1px solid #bbb;
@@ -160,17 +161,88 @@ main {
     color: #888;
 }
 
-.composer div {
+.composer-tools {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: 8px;
+}
+
+.composer-shortcuts {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icon-button {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #111;
+}
+
+.icon-button svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.icon-button:hover {
+    opacity: .55;
+}
+
+.composer-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
     color: #555;
     font-size: 10px;
 }
 
-.composer button {
+.composer-meta .button {
     font-weight: 600;
+}
+
+#selected-image {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.emoji-picker {
+    position: absolute;
+    left: 0;
+    bottom: 38px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+    width: 190px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+    z-index: 2;
+}
+
+.emoji-picker[hidden] {
+    display: none;
+}
+
+.emoji-picker button {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
 }
 
 .post {
@@ -204,6 +276,13 @@ main {
     margin: 8px 0 12px;
     font-size: 12px;
     line-height: 1.55;
+}
+
+.post-image {
+    width: auto;
+    max-width: 100%;
+    max-height: 520px;
+    margin: 8px 0 12px;
 }
 
 .post-actions {
