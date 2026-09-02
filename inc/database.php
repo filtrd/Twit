@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     content TEXT NOT NULL CHECK(length(content) <= 280),
+    image_path TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -40,3 +41,16 @@ CREATE TABLE IF NOT EXISTS follows (
     CHECK (follower_id != following_id)
 );
 SQL);
+
+$columns = $pdo->query('PRAGMA table_info(posts)')->fetchAll();
+$hasImagePath = false;
+foreach ($columns as $column) {
+    if ($column['name'] === 'image_path') {
+        $hasImagePath = true;
+        break;
+    }
+}
+
+if (!$hasImagePath) {
+    $pdo->exec('ALTER TABLE posts ADD COLUMN image_path TEXT');
+}
