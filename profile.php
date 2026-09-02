@@ -25,6 +25,7 @@ $user = current_user();
     <div class="wrap">
         <a class="logo" href="index.php"><?= e($siteName) ?></a>
         <nav>
+          <a href="./">Home</a>
             <?php if ($user): ?>
                 <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
                 <form class="inline" method="post" action="logout.php">
