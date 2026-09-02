@@ -56,7 +56,7 @@ function liked_by_me(int $postId): bool {
         <?php if ($user): ?>
             <form class="composer" method="post" action="post.php" enctype="multipart/form-data">
                 <textarea name="content" maxlength="<?= (int)$maxPostLength ?>" placeholder="What's happening?"></textarea>
-                <input type="file" id="image-upload" name="image" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+                <input type="file" id="image-upload" name="image" accept="image/jpeg,image/png,image/webp" hidden>
 
                 <div class="composer-tools">
                     <div class="composer-shortcuts">
