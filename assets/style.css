@@ -62,7 +62,7 @@ a:hover {
 }
 
 .wrap {
-    width: min(1100px, calc(100% - 40px));
+    width: min(640px, calc(100% - 40px));
     margin: 0 auto;
 }
 
@@ -394,9 +394,9 @@ footer .wrap {
 }
 
 @media (max-width: 600px) {
-    .wrap {
-        width: min(100% - 24px, 1100px);
-    }
+.wrap {
+    width: min(100% - 24px, 640px);
+}
 
     main {
         padding-top: 36px;
