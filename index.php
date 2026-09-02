@@ -55,7 +55,7 @@ function liked_by_me(int $postId): bool {
 
         <?php if ($user): ?>
             <form class="composer" method="post" action="post.php" enctype="multipart/form-data">
-                <textarea name="content" maxlength="<?= e($maxPostLength) ?>" placeholder="What's happening?"></textarea>
+                <textarea name="content" maxlength="<?= (int)$maxPostLength ?>" placeholder="What's happening?"></textarea>
                 <input type="file" id="image-upload" name="image" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
 
                 <div class="composer-tools">
@@ -83,7 +83,7 @@ function liked_by_me(int $postId): bool {
                     </div>
                     <div class="composer-meta">
                         <span id="selected-image"></span>
-                        <span id="char-count">0/<?= e($maxPostLength) ?></span>
+                        <span id="char-count">0/<?= (int)$maxPostLength ?></span>
                         <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                         <button class="button">Post</button>
                     </div>
@@ -146,7 +146,7 @@ const emojiPicker = document.getElementById('emoji-picker');
 
 function updateCounter() {
     if (textarea && counter) {
-        counter.textContent = textarea.value.length + '/<?= e($maxPostLength) ?>';
+        counter.textContent = textarea.value.length + '/<?= (int)$maxPostLength ?>';
     }
 }
 
