@@ -85,6 +85,7 @@ a:hover {
 }
 
 nav {
+    font-family: "IBM Plex Mono", monospace;
     display: flex;
     gap: 32px;
     align-items: center;
