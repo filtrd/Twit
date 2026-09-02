@@ -27,11 +27,13 @@ $user = current_user();
         <nav>
             <?php if ($user): ?>
                 <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
-                  <form class="inline" method="post" action="logout.php">
+                <form class="inline" method="post" action="logout.php">
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                     <button>Log out</button>
+                </form>
             <?php else: ?>
                 <a href="login.php">Log in</a>
+                <a class="button" href="register.php">Sign up</a>
             <?php endif; ?>
         </nav>
     </div>
@@ -48,7 +50,18 @@ $user = current_user();
             <?php foreach ($posts as $post): ?>
                 <article class="post">
                     <div class="post-head">
-                        <strong>@<?= e($profile['username']) ?></strong>
+                          <nav>
+            <?php if ($user): ?>
+                <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
+                <form class="inline" method="post" action="logout.php">
+                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                    <button>Log out</button>
+                </form>
+            <?php else: ?>
+                <a href="login.php">Log in</a>
+                <a class="button" href="register.php">Sign up</a>
+            <?php endif; ?>
+        </nav>      <strong>@<?= e($profile['username']) ?></strong>
                         <time><?= e($post['created_at']) ?></time>
                     </div>
                     <p><?= nl2br(e($post['content'])) ?></p>
