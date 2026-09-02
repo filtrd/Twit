@@ -58,5 +58,16 @@ $user = current_user();
         </section>
     </div>
 </main>
+
+<footer>
+    <div class="wrap">
+        <span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span>
+        <nav>
+            <a href="#">About</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+        </nav>
+    </div>
+</footer>
 </body>
 </html>
