@@ -79,7 +79,8 @@ a:hover {
 }
 
 .logo {
-    font-family: "IBM Plex Mono", monospace;    font-size: 16px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 16px;
     font-weight: 700;
 }
 
@@ -109,7 +110,7 @@ button:hover,
     display: inline;
 }
 
-main.wrap {
+main {
     padding: 36px 0 80px;
 }
 
@@ -315,7 +316,7 @@ footer .wrap {
         width: min(100% - 24px, 1100px);
     }
 
-    main.wrap {
+    main {
         padding-top: 36px;
     }
 
