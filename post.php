@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
+
 require_once __DIR__ . '/inc/database.php';
+
 $user = require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -9,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 verify_csrf();
+
 $content = trim($_POST['content'] ?? '');
 $imagePath = null;
 
@@ -26,35 +29,66 @@ if (!empty($_FILES['image']['name'])) {
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime = $finfo->file($_FILES['image']['tmp_name']);
 
-    $extensions = [
-        'image/jpeg' => 'jpg',
-        'image/png' => 'png',
-        'image/gif' => 'gif',
-        'image/webp' => 'webp',
+    $allowedMimes = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
     ];
 
-    if (!isset($extensions[$mime])) {
+    if (!in_array($mime, $allowedMimes, true)) {
         header('Location: index.php');
         exit;
     }
 
+    if (!function_exists('imagecreatefromstring') || !function_exists('imagewebp')) {
+        header('Location: index.php');
+        exit;
+    }
+
+    $image = imagecreatefromstring(
+        file_get_contents($_FILES['image']['tmp_name'])
+    );
+
+    if ($image === false) {
+        header('Location: index.php');
+        exit;
+    }
+
+    imagepalettetotruecolor($image);
+    imagealphablending($image, false);
+    imagesavealpha($image, true);
+
     $uploadDir = __DIR__ . '/uploads';
+
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0775, true);
     }
 
-    $filename = bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
-    if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . '/' . $filename)) {
+    $filename = bin2hex(random_bytes(16)) . '.webp';
+    $destination = $uploadDir . '/' . $filename;
+
+    if (!imagewebp($image, $destination, 82)) {
+        imagedestroy($image);
+        @unlink($destination);
         header('Location: index.php');
         exit;
     }
+
+    imagedestroy($image);
 
     $imagePath = 'uploads/' . $filename;
 }
 
 if (($content !== '' && mb_strlen($content) <= 280) || $imagePath !== null) {
-    $stmt = db()->prepare('INSERT INTO posts (user_id, content, image_path) VALUES (?, ?, ?)');
-    $stmt->execute([$user['id'], $content, $imagePath]);
+    $stmt = db()->prepare(
+        'INSERT INTO posts (user_id, content, image_path) VALUES (?, ?, ?)'
+    );
+
+    $stmt->execute([
+        $user['id'],
+        $content,
+        $imagePath
+    ]);
 }
 
 header('Location: index.php');
