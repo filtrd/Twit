@@ -8,9 +8,19 @@ $stmt = db()->prepare('SELECT id, username, created_at FROM users WHERE username
 $stmt->execute([$username]);
 $profile = $stmt->fetch();
 if (!$profile) { http_response_code(404); exit('User not found'); }
+
 $stmt = db()->prepare('SELECT id, content, created_at FROM posts WHERE user_id = ? ORDER BY id DESC');
 $stmt->execute([$profile['id']]);
 $posts = $stmt->fetchAll();
+
+$stmt = db()->prepare('SELECT COUNT(*) FROM follows WHERE following_id = ?');
+$stmt->execute([$profile['id']]);
+$followerCount = (int)$stmt->fetchColumn();
+
+$stmt = db()->prepare('SELECT COUNT(*) FROM follows WHERE follower_id = ?');
+$stmt->execute([$profile['id']]);
+$followingCount = (int)$stmt->fetchColumn();
+
 $user = current_user();
 $isFollowing = false;
 if ($user && (int)$user['id'] !== (int)$profile['id']) {
@@ -51,6 +61,7 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
         <section class="profile">
             <h1>@<?= e($profile['username']) ?></h1>
             <p>Joined <?= e($profile['created_at']) ?></p>
+            <p><?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
             <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
                 <form method="post" action="follow.php">
                     <input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>">
