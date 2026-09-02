@@ -91,6 +91,17 @@ function liked_by_me(int $postId): bool {
     </div>
 </main>
 
+<footer>
+    <div class="wrap">
+        <span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span>
+        <nav>
+            <a href="#">About</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+        </nav>
+    </div>
+</footer>
+
 <script>
 const textarea = document.querySelector('textarea[name="content"]');
 const counter = document.getElementById('char-count');
@@ -99,8 +110,10 @@ function updateCounter() {
     counter.textContent = 280 - textarea.value.length;
 }
 
-textarea.addEventListener('input', updateCounter);
-updateCounter();
+if (textarea && counter) {
+    textarea.addEventListener('input', updateCounter);
+    updateCounter();
+}
 </script>
 </body>
 </html>
