@@ -63,6 +63,42 @@ function verify_csrf(): void
     }
 }
 
+function formatPostDate(string $date): string
+{
+    $timestamp = strtotime($date);
+    $diff = time() - $timestamp;
+
+    if ($diff < 60) {
+        return '1 min ago';
+    }
+
+    if ($diff < 3600) {
+        $minutes = (int) floor($diff / 60);
+        return $minutes . ' min' . ($minutes === 1 ? '' : 's') . ' ago';
+    }
+
+    if ($diff < 86400) {
+        $hours = (int) floor($diff / 3600);
+        return $hours . ' hr' . ($hours === 1 ? '' : 's') . ' ago';
+    }
+
+    if ($diff < 604800) {
+        $days = (int) floor($diff / 86400);
+        return $days . ' day' . ($days === 1 ? '' : 's') . ' ago';
+    }
+
+    if ($diff < 2592000) {
+        $weeks = (int) floor($diff / 604800);
+        return $weeks . ' wk' . ($weeks === 1 ? '' : 's') . ' ago';
+    }
+
+    return date('M j, Y', $timestamp);
+}
+
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
