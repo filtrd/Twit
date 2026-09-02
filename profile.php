@@ -12,6 +12,12 @@ $stmt = db()->prepare('SELECT id, content, created_at FROM posts WHERE user_id =
 $stmt->execute([$profile['id']]);
 $posts = $stmt->fetchAll();
 $user = current_user();
+$isFollowing = false;
+if ($user && (int)$user['id'] !== (int)$profile['id']) {
+    $stmt = db()->prepare('SELECT 1 FROM follows WHERE follower_id = ? AND following_id = ?');
+    $stmt->execute([$user['id'], $profile['id']]);
+    $isFollowing = (bool)$stmt->fetchColumn();
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -25,7 +31,7 @@ $user = current_user();
     <div class="wrap">
         <a class="logo" href="index.php"><?= e($siteName) ?></a>
         <nav>
-          <a href="./">Home</a>
+            <a href="./">Home</a>
             <?php if ($user): ?>
                 <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
                 <form class="inline" method="post" action="logout.php">
@@ -45,13 +51,20 @@ $user = current_user();
         <section class="profile">
             <h1>@<?= e($profile['username']) ?></h1>
             <p>Joined <?= e($profile['created_at']) ?></p>
+            <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
+                <form method="post" action="follow.php">
+                    <input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>">
+                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                    <button class="button"><?= $isFollowing ? 'Unfollow' : 'Follow' ?></button>
+                </form>
+            <?php endif; ?>
         </section>
 
         <section class="feed">
             <?php foreach ($posts as $post): ?>
                 <article class="post">
                     <div class="post-head">
-                              <strong>@<?= e($profile['username']) ?></strong>
+                        <strong>@<?= e($profile['username']) ?></strong>
                         <time><?= e($post['created_at']) ?></time>
                     </div>
                     <p><?= nl2br(e($post['content'])) ?></p>
