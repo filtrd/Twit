@@ -60,7 +60,7 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
     <div class="wrap">
         <section class="profile">
             <h1>@<?= e($profile['username']) ?></h1>
-            <p>Joined <?= e($profile['created_at']) ?></p>
+            <p>Joined <?= date('M Y', strtotime($profile['created_at'])) ?></p>
             <p><?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
             <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
                 <form method="post" action="follow.php">
