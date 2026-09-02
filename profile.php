@@ -13,6 +13,10 @@ $stmt = db()->prepare('SELECT id, content, created_at FROM posts WHERE user_id =
 $stmt->execute([$profile['id']]);
 $posts = $stmt->fetchAll();
 
+$stmt = db()->prepare('SELECT COUNT(*) FROM posts WHERE user_id = ?');
+$stmt->execute([$profile['id']]);
+$postCount = (int)$stmt->fetchColumn();
+
 $stmt = db()->prepare('SELECT COUNT(*) FROM follows WHERE following_id = ?');
 $stmt->execute([$profile['id']]);
 $followerCount = (int)$stmt->fetchColumn();
@@ -61,7 +65,7 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
         <section class="profile">
             <h1>@<?= e($profile['username']) ?></h1>
             <p>Joined <?= date('M Y', strtotime($profile['created_at'])) ?></p>
-            <p><?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
+            <p><?= $postCount ?> Posts &middot; <?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
             <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
                 <form method="post" action="follow.php">
                     <input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>">
