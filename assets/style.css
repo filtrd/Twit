@@ -34,6 +34,14 @@ canvas {
 
 
 /* ----------------------------------------
+   Fonts
+   ---------------------------------------- */
+
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.2.5/400.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.2.5/700.css");
+
+
+/* ----------------------------------------
    Microblog
    ---------------------------------------- */
 
@@ -71,8 +79,7 @@ a:hover {
 }
 
 .logo {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 16px;
+    font-family: "IBM Plex Mono", monospace;    font-size: 16px;
     font-weight: 700;
 }
 
@@ -114,6 +121,7 @@ main.wrap {
 }
 
 .hero h1 {
+    font-family: "IBM Plex Mono", monospace;
     margin: 0 0 8px;
     font-size: 14px;
     line-height: 1.2;
