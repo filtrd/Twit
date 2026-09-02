@@ -42,19 +42,14 @@ function liked_by_me(int $postId): bool {
 </div>
 </header>
 <main class="wrap">
-<?php if ($user): ?>
-        <section class="hero">
+       <section class="hero">
                <h1>Welcome to <?= e($siteName) ?></h1><p>Share short thoughts with the world.</p>
        </section>
-       
+<?php if ($user): ?>
        <form class="composer" method="post" action="post.php"><textarea name="content" maxlength="280" placeholder="What's happening?" required></textarea>
               <div><span><span id="char-count">280</span> characters left</span><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button">Post</button>
               </div>
        </form>
-       <?php else: ?>
-       <section class="hero">
-              <h1>Welcome to <?= e($siteName) ?></h1><p>Share short thoughts with the world - <a class="button" href="register.php">Create an account</a></p>
-       </section>
        <?php endif; ?>
 <section class="feed">
 <?php foreach ($posts as $post): ?>
