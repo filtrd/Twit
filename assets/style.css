@@ -126,14 +126,14 @@ main {
 .hero h1 {
     font-family: "IBM Plex Mono", monospace;
     margin: 0 0 8px;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.2;
 }
 
 .hero p {
     margin: 0;
     color: #666;
-    font-size: 12px;
+    font-size: 10px;
 }
 
 .composer {
