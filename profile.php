@@ -53,10 +53,6 @@ $user = current_user();
                           <nav>
             <?php if ($user): ?>
                 <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
-                <form class="inline" method="post" action="logout.php">
-                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                    <button>Log out</button>
-                </form>
             <?php else: ?>
                 <a href="login.php">Log in</a>
                 <a class="button" href="register.php">Sign up</a>
