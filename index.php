@@ -69,7 +69,7 @@ function liked_by_me(int $postId): bool {
                 <article class="post">
                     <div class="post-head">
                         <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
-                        <time><?= e($post['created_at']) ?></time>
+                        <time><?= e(formatPostDate($post['created_at'])) ?></time>
                     </div>
                     <p><?= nl2br(e($post['content'])) ?></p>
                     <div class="post-actions">
