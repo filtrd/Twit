@@ -28,48 +28,68 @@ function liked_by_me(int $postId): bool {
 </head>
 <body>
 <header class="topbar">
-       <div class="wrap"><a class="logo" href="index.php"><?= e($siteName) ?></a>
-              <nav>
-<?php if ($user): ?><a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
-                     <form class="inline" method="post" action="logout.php">
-                            <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                            <button>Log out</button>
-       </form>
-       <?php else: ?>
-       <a href="login.php">Log in</a><a class="button" href="register.php">Sign up</a>
-       <?php endif; ?>
-</nav>
-</div>
+    <div class="wrap">
+        <a class="logo" href="index.php"><?= e($siteName) ?></a>
+        <nav>
+            <?php if ($user): ?>
+                <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
+                <form class="inline" method="post" action="logout.php">
+                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                    <button>Log out</button>
+                </form>
+            <?php else: ?>
+                <a href="login.php">Log in</a>
+                <a class="button" href="register.php">Sign up</a>
+            <?php endif; ?>
+        </nav>
+    </div>
 </header>
-<main class="wrap">
-       <section class="hero">
-               <h1>Welcome to <?= e($siteName) ?></h1><p>Share short thoughts with the world.</p>
-       </section>
-<?php if ($user): ?>
-       <form class="composer" method="post" action="post.php"><textarea name="content" maxlength="280" placeholder="What's happening?" required></textarea>
-              <div><span><span id="char-count">280</span> characters left</span><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button">Post</button>
-              </div>
-       </form>
-       <?php endif; ?>
-<section class="feed">
-<?php foreach ($posts as $post): ?>
-       <article class="post">
-              <div class="post-head"><a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a><time><?= e($post['created_at']) ?></time>
-              </div>
-              <p><?= nl2br(e($post['content'])) ?></p>
-              <div class="post-actions"><span>♥ <?= (int)$post['like_count'] ?></span><?php if ($user): ?>
-              <form class="inline" method="post" action="like.php">
-               <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
-               <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-              <button><?= liked_by_me((int)$post['id']) ? 'Unlike' : 'Like' ?></button>
-       </form><?php endif; ?>
-       </div>
-       </article>
-       <?php endforeach; ?>
-<?php if (!$posts): ?>
-       <p class="empty">No posts yet. Be the first!</p>
-       <?php endif; ?>
-</section></main>
+
+<main>
+    <div class="wrap">
+        <section class="hero">
+            <h1>Welcome to <?= e($siteName) ?></h1>
+            <p>Share short thoughts with the world.</p>
+        </section>
+
+        <?php if ($user): ?>
+            <form class="composer" method="post" action="post.php">
+                <textarea name="content" maxlength="280" placeholder="What's happening?" required></textarea>
+                <div>
+                    <span><span id="char-count">280</span> characters left</span>
+                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                    <button class="button">Post</button>
+                </div>
+            </form>
+        <?php endif; ?>
+
+        <section class="feed">
+            <?php foreach ($posts as $post): ?>
+                <article class="post">
+                    <div class="post-head">
+                        <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
+                        <time><?= e($post['created_at']) ?></time>
+                    </div>
+                    <p><?= nl2br(e($post['content'])) ?></p>
+                    <div class="post-actions">
+                        <span>♥ <?= (int)$post['like_count'] ?></span>
+                        <?php if ($user): ?>
+                            <form class="inline" method="post" action="like.php">
+                                <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                                <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                <button><?= liked_by_me((int)$post['id']) ? 'Unlike' : 'Like' ?></button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+
+            <?php if (!$posts): ?>
+                <p class="empty">No posts yet. Be the first!</p>
+            <?php endif; ?>
+        </section>
+    </div>
+</main>
 
 <script>
 const textarea = document.querySelector('textarea[name="content"]');
