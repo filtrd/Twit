@@ -103,7 +103,7 @@ button:hover,
 }
 
 main.wrap {
-    padding: 56px 0 80px;
+    padding: 36px 0 80px;
 }
 
 .hero {
@@ -115,14 +115,14 @@ main.wrap {
 
 .hero h1 {
     margin: 0 0 8px;
-    font-size: 24px;
+    font-size: 14px;
     line-height: 1.2;
 }
 
 .hero p {
     margin: 0;
     color: #666;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .composer {
@@ -316,7 +316,7 @@ footer .wrap {
     }
 
     .hero h1 {
-        font-size: 21px;
+        font-size: 14px;
     }
 
     footer .wrap {
