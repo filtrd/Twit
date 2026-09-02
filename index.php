@@ -48,7 +48,7 @@ function liked_by_me(int $postId): bool {
               </div>
        </form>
        <?php else: ?>
-       <section class="hero"><h1>Welcome to <?= e($siteName) ?></h1><p>Share short thoughts with the world.</p><a class="button" href="register.php">Create an account</a>
+       <section class="hero"><h1>Welcome to <?= e($siteName) ?></h1><p>Share short thoughts with the world. - <a class="button" href="register.php">Create an account</a></p>
        </section>
        <?php endif; ?>
 <section class="feed">
