@@ -34,7 +34,7 @@ function current_user(): ?array
         return null;
     }
 
-    $stmt = db()->prepare('SELECT id, username FROM users WHERE id = ?');
+    $stmt = db()->prepare('SELECT id, username, avatar_path FROM users WHERE id = ?');
     $stmt->execute([$_SESSION['user_id']]);
     return $stmt->fetch() ?: null;
 }
@@ -91,7 +91,6 @@ function postCharacterCount(string $content): int
     return $count;
 }
 
-
 function renderPostContent(string $content): string
 {
     $output = '';
@@ -128,17 +127,14 @@ function renderPostContent(string $content): string
             }
 
             $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . e($display) . '</a>';
-
             $output .= e($trailing);
             $offset = $position + strlen($url);
         }
     }
 
     $output .= e(substr($content, $offset));
-
     return nl2br($output);
 }
-
 
 function formatPostDate(string $date): string
 {
