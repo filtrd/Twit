@@ -5,7 +5,7 @@ require_once __DIR__ . '/inc/config.php';
 
 $user = current_user();
 $stmt = db()->query(<<<'SQL'
-SELECT p.id, p.content, p.image_path, p.created_at, u.id AS user_id, u.username, u.avatar_path,
+SELECT p.id, p.content, p.image_path, p.created_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path,
        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count
 FROM posts p
 JOIN users u ON u.id = p.user_id
@@ -18,6 +18,12 @@ function liked_by_me(int $postId): bool {
     $stmt = db()->prepare('SELECT 1 FROM likes WHERE user_id = ? AND post_id = ?');
     $stmt->execute([$_SESSION['user_id'], $postId]);
     return (bool) $stmt->fetchColumn();
+}
+
+function can_edit_post(array $post, array $user): bool {
+    return (int)$post['user_id'] === (int)$user['id']
+        && time() - strtotime($post['created_at']) <= 300
+        && (int)$post['edit_count'] < 2;
 }
 ?>
 <!doctype html>
@@ -94,6 +100,21 @@ function liked_by_me(int $postId): bool {
                             <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
                             <time><?= e(formatPostDate($post['created_at'])) ?></time>
                         </div>
+                        <?php if ($user && (int)$post['user_id'] === (int)$user['id']): ?>
+                            <div class="post-menu">
+                                <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
+                                <div class="post-menu-dropdown" hidden>
+                                    <?php if (can_edit_post($post, $user)): ?>
+                                        <a href="edit.php?post_id=<?= (int)$post['id'] ?>">Edit</a>
+                                    <?php endif; ?>
+                                    <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
+                                        <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                        <button type="submit">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <?php if ($post['content'] !== ''): ?>
                         <p><?= renderPostContent($post['content']) ?></p>
@@ -109,13 +130,6 @@ function liked_by_me(int $postId): bool {
                                 <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                                 <button><?= liked_by_me((int)$post['id']) ? 'Unlike' : 'Like' ?></button>
                             </form>
-                            <?php if ((int)$post['user_id'] === (int)$user['id']): ?>
-                                <form class="inline" method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
-                                    <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
-                                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                                    <button type="submit">Delete</button>
-                                </form>
-                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </article>
@@ -197,6 +211,25 @@ if (emojiButton && emojiPicker) {
         });
     });
 }
+
+document.querySelectorAll('.post-menu').forEach(menu => {
+    const button = menu.querySelector('.post-menu-button');
+    const dropdown = menu.querySelector('.post-menu-dropdown');
+
+    button.addEventListener('click', event => {
+        event.stopPropagation();
+        const open = !dropdown.hidden;
+        document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
+        document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
+        dropdown.hidden = open;
+        button.setAttribute('aria-expanded', String(!open));
+    });
+});
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
+    document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
+});
 </script>
 </body>
 </html>
