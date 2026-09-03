@@ -138,19 +138,26 @@ SQL);
 }
 
 /*
- * Add image_path for databases created before image uploads were added.
+ * Add post fields for databases created before image uploads/editing were added.
  */
 $columns = $pdo->query('PRAGMA table_info(posts)')->fetchAll();
 
 $hasImagePath = false;
+$hasEditCount = false;
 
 foreach ($columns as $column) {
     if ($column['name'] === 'image_path') {
         $hasImagePath = true;
-        break;
+    }
+    if ($column['name'] === 'edit_count') {
+        $hasEditCount = true;
     }
 }
 
 if (!$hasImagePath) {
     $pdo->exec('ALTER TABLE posts ADD COLUMN image_path TEXT');
+}
+
+if (!$hasEditCount) {
+    $pdo->exec('ALTER TABLE posts ADD COLUMN edit_count INTEGER NOT NULL DEFAULT 0');
 }
