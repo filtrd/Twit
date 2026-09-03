@@ -9,7 +9,7 @@ $stmt->execute([$username]);
 $profile = $stmt->fetch();
 if (!$profile) { http_response_code(404); exit('User not found'); }
 
-$stmt = db()->prepare('SELECT p.id, p.content, p.image_path, p.created_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path, (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count FROM posts p JOIN users u ON u.id = p.user_id WHERE p.user_id = ? ORDER BY p.id DESC');
+$stmt = db()->prepare('SELECT p.id, p.content, p.image_path, p.created_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path, (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count, (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count FROM posts p JOIN users u ON u.id = p.user_id WHERE p.user_id = ? ORDER BY p.id DESC');
 $stmt->execute([$profile['id']]);
 $posts = $stmt->fetchAll();
 
@@ -121,32 +121,6 @@ document.querySelectorAll('.post-menu').forEach(menu => {
         button.setAttribute('aria-expanded', String(!open));
     });
 });
-
-document.querySelectorAll('.comment-toggle').forEach(button => {
-    button.addEventListener('click', () => {
-        const comments = document.querySelector('[data-comments="' + button.dataset.postId + '"]');
-        if (comments) comments.hidden = !comments.hidden;
-    });
-});
-
-document.querySelectorAll('.comment-reply-button').forEach(button => {
-    button.addEventListener('click', () => {
-        const form = document.querySelector('[data-reply-form="' + button.dataset.commentId + '"]');
-        if (form) { form.hidden = !form.hidden; if (!form.hidden) form.querySelector('textarea').focus(); }
-    });
-});
-
-document.querySelectorAll('.comment-cancel-button').forEach(button => {
-    button.addEventListener('click', () => {
-        const form = document.querySelector('[data-reply-form="' + button.dataset.commentId + '"]');
-        if (form) form.hidden = true;
-    });
-});
-
-if (window.location.hash.startsWith('#post-')) {
-    const post = document.querySelector(window.location.hash);
-    if (post) { const comments = post.querySelector('.comments'); if (comments) comments.hidden = false; }
-}
 
 document.addEventListener('click', () => {
     document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
