@@ -71,6 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <nav>
             <a href="./">Home</a>
             <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
+            <form class="inline" method="post" action="logout.php">
+                <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                <button>Log out</button>
+            </form>
         </nav>
     </div>
 </header>
