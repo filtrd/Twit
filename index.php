@@ -5,7 +5,7 @@ require_once __DIR__ . '/inc/config.php';
 
 $user = current_user();
 $stmt = db()->query(<<<'SQL'
-SELECT p.id, p.content, p.image_path, p.created_at, u.id AS user_id, u.username,
+SELECT p.id, p.content, p.image_path, p.created_at, u.id AS user_id, u.username, u.avatar_path,
        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count
 FROM posts p
 JOIN users u ON u.id = p.user_id
@@ -67,18 +67,7 @@ function liked_by_me(int $postId): bool {
                             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="9" cy="10" r="1"></circle><circle cx="15" cy="10" r="1"></circle><path d="M8.5 14.5c1 1.5 2.2 2.25 3.5 2.25s2.5-.75 3.5-2.25"></path></svg>
                         </button>
                         <div class="emoji-picker" id="emoji-picker" hidden>
-                            <button type="button">😀</button>
-                            <button type="button">😂</button>
-                            <button type="button">❤️</button>
-                            <button type="button">👍</button>
-                            <button type="button">🎉</button>
-                            <button type="button">🔥</button>
-                            <button type="button">🚀</button>
-                            <button type="button">😊</button>
-                            <button type="button">😎</button>
-                            <button type="button">🤔</button>
-                            <button type="button">👏</button>
-                            <button type="button">🙌</button>
+                            <button type="button">😀</button><button type="button">😂</button><button type="button">❤️</button><button type="button">👍</button><button type="button">🎉</button><button type="button">🔥</button><button type="button">🚀</button><button type="button">😊</button><button type="button">😎</button><button type="button">🤔</button><button type="button">👏</button><button type="button">🙌</button>
                         </div>
                     </div>
                     <div class="composer-meta">
@@ -95,8 +84,17 @@ function liked_by_me(int $postId): bool {
             <?php foreach ($posts as $post): ?>
                 <article class="post">
                     <div class="post-head">
-                        <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
-                        <time><?= e(formatPostDate($post['created_at'])) ?></time>
+                        <a class="avatar-link" href="profile.php?u=<?= urlencode($post['username']) ?>">
+                            <?php if (!empty($post['avatar_path'])): ?>
+                                <img class="avatar avatar-small" src="<?= e($post['avatar_path']) ?>" alt="">
+                            <?php else: ?>
+                                <span class="avatar avatar-small avatar-fallback"><?= e(strtoupper(substr($post['username'], 0, 1))) ?></span>
+                            <?php endif; ?>
+                        </a>
+                        <div class="post-author">
+                            <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
+                            <time><?= e(formatPostDate($post['created_at'])) ?></time>
+                        </div>
                     </div>
                     <?php if ($post['content'] !== ''): ?>
                         <p><?= renderPostContent($post['content']) ?></p>
@@ -127,11 +125,7 @@ function liked_by_me(int $postId): bool {
 <footer>
     <div class="wrap">
         <span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span>
-        <nav>
-            <a href="#">About</a>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-        </nav>
+        <nav><a href="#">About</a><a href="#">Privacy</a><a href="#">Terms</a></nav>
     </div>
 </footer>
 
@@ -152,14 +146,11 @@ function postCharacterCount(value) {
 
     while ((match = urlPattern.exec(value)) !== null) {
         count += Array.from(value.slice(lastIndex, match.index)).length;
-
         const url = match[0];
         const trailingMatch = url.match(/[.,!?;:)\]}]+$/);
         const trailing = trailingMatch ? trailingMatch[0] : '';
-
         count += 23;
         count += Array.from(trailing).length;
-
         lastIndex = match.index + url.length;
     }
 
@@ -186,10 +177,7 @@ if (imageButton && imageUpload) {
 }
 
 if (emojiButton && emojiPicker) {
-    emojiButton.addEventListener('click', () => {
-        emojiPicker.hidden = !emojiPicker.hidden;
-    });
-
+    emojiButton.addEventListener('click', () => { emojiPicker.hidden = !emojiPicker.hidden; });
     emojiPicker.querySelectorAll('button').forEach(button => {
         button.addEventListener('click', () => {
             const start = textarea.selectionStart;
