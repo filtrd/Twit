@@ -139,7 +139,7 @@ main {
 .composer textarea {
     display: block;
     width: 100%;
-    min-height: 100px;
+    min-height: 50px;
     resize: vertical;
     border: 0;
     outline: 0;
