@@ -8,15 +8,9 @@ const POST_URL_PATTERN = '~https?://[^\s<]+~i';
 function db(): PDO
 {
     static $pdo = null;
-    if ($pdo instanceof PDO) {
-        return $pdo;
-    }
-
+    if ($pdo instanceof PDO) return $pdo;
     $dir = dirname(DB_PATH);
-    if (!is_dir($dir)) {
-        mkdir($dir, 0775, true);
-    }
-
+    if (!is_dir($dir)) mkdir($dir, 0775, true);
     $pdo = new PDO('sqlite:' . DB_PATH);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
@@ -24,16 +18,11 @@ function db(): PDO
     return $pdo;
 }
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
 function current_user(): ?array
 {
-    if (empty($_SESSION['user_id'])) {
-        return null;
-    }
-
+    if (empty($_SESSION['user_id'])) return null;
     $stmt = db()->prepare('SELECT id, username, avatar_path FROM users WHERE id = ?');
     $stmt->execute([$_SESSION['user_id']]);
     return $stmt->fetch() ?: null;
@@ -42,18 +31,13 @@ function current_user(): ?array
 function require_login(): array
 {
     $user = current_user();
-    if (!$user) {
-        header('Location: login.php');
-        exit;
-    }
+    if (!$user) { header('Location: login.php'); exit; }
     return $user;
 }
 
 function csrf_token(): string
 {
-    if (empty($_SESSION['csrf'])) {
-        $_SESSION['csrf'] = bin2hex(random_bytes(32));
-    }
+    if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(32));
     return $_SESSION['csrf'];
 }
 
@@ -65,100 +49,51 @@ function verify_csrf(): void
     }
 }
 
-function set_flash(string $key, string $message): void
-{
-    $_SESSION['flash'][$key] = $message;
-}
-
-function get_flash(string $key): ?string
-{
-    $message = $_SESSION['flash'][$key] ?? null;
-    unset($_SESSION['flash'][$key]);
-    return $message;
-}
+function set_flash(string $key, string $message): void { $_SESSION['flash'][$key] = $message; }
+function get_flash(string $key): ?string { $message = $_SESSION['flash'][$key] ?? null; unset($_SESSION['flash'][$key]); return $message; }
 
 function postCharacterCount(string $content): int
 {
-    // HTML form submission can send textarea line breaks as CRLF, while
-    // JavaScript treats them as a single character. Normalize them so the
-    // client-side and server-side counts agree.
     $content = str_replace(["\r\n", "\r"], "\n", $content);
-
-    $count = 0;
-    $offset = 0;
-
+    $count = 0; $offset = 0;
     if (preg_match_all(POST_URL_PATTERN, $content, $matches, PREG_OFFSET_CAPTURE)) {
         foreach ($matches[0] as $match) {
-            $url = $match[0];
-            $position = $match[1];
-
+            $url = $match[0]; $position = $match[1];
             $count += mb_strlen(substr($content, $offset, $position - $offset));
-
             $trimmedUrl = rtrim($url, '.,!?;:)]}');
-            $trailing = substr($url, strlen($trimmedUrl));
-
-            $count += POST_URL_LENGTH;
-            $count += mb_strlen($trailing);
-
+            $count += POST_URL_LENGTH + mb_strlen(substr($url, strlen($trimmedUrl)));
             $offset = $position + strlen($url);
         }
     }
-
-    $count += mb_strlen(substr($content, $offset));
-    return $count;
+    return $count + mb_strlen(substr($content, $offset));
 }
 
 function renderPostContent(string $content): string
 {
-    $output = '';
-    $offset = 0;
-
+    $output = ''; $offset = 0;
     if (preg_match_all(POST_URL_PATTERN, $content, $matches, PREG_OFFSET_CAPTURE)) {
         foreach ($matches[0] as $match) {
-            $url = $match[0];
-            $position = $match[1];
-
+            $url = $match[0]; $position = $match[1];
             $output .= e(substr($content, $offset, $position - $offset));
-
             $trimmedUrl = rtrim($url, '.,!?;:)]}');
             $trailing = substr($url, strlen($trimmedUrl));
-
             $parsed = parse_url($trimmedUrl);
-            $host = $parsed['host'] ?? $trimmedUrl;
-            $host = preg_replace('~^www\\.~i', '', $host);
-
-            $path = $parsed['path'] ?? '';
-            $path = trim($path, '/');
+            $host = preg_replace('~^www\\.~i', '', $parsed['host'] ?? $trimmedUrl);
+            $path = trim($parsed['path'] ?? '', '/');
             $segments = $path === '' ? [] : explode('/', $path);
-
             $display = $host;
-
-            if (!empty($segments)) {
-                $display .= '/' . $segments[0];
-
-                if (count($segments) > 1) {
-                    $display .= '…';
-                }
-            } elseif (!empty($parsed['query']) || !empty($parsed['fragment'])) {
-                $display .= '…';
-            }
-
-            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . e($display) . '</a>';
-            $output .= e($trailing);
+            if ($segments) { $display .= '/' . $segments[0]; if (count($segments) > 1) $display .= '…'; }
+            elseif (!empty($parsed['query']) || !empty($parsed['fragment'])) $display .= '…';
+            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . e($display) . '</a>' . e($trailing);
             $offset = $position + strlen($url);
         }
     }
-
-    $output .= e(substr($content, $offset));
-    return nl2br($output);
+    return nl2br($output . e(substr($content, $offset)));
 }
 
 function liked_by_me(int $postId): bool
 {
-    if (!isset($_SESSION['user_id'])) {
-        return false;
-    }
-
+    if (!isset($_SESSION['user_id'])) return false;
     $stmt = db()->prepare('SELECT 1 FROM likes WHERE user_id = ? AND post_id = ?');
     $stmt->execute([$_SESSION['user_id'], $postId]);
     return (bool)$stmt->fetchColumn();
@@ -167,117 +102,95 @@ function liked_by_me(int $postId): bool
 function can_edit_post(array $post, array $user): bool
 {
     global $postEditTime, $postEditCount;
-
-    return (int)$post['user_id'] === (int)$user['id']
-        && time() - strtotime($post['created_at']) >= 0
-        && time() - strtotime($post['created_at']) <= ((int)$postEditTime * 60)
-        && (int)$post['edit_count'] < (int)$postEditCount;
+    $age = time() - strtotime($post['created_at']);
+    return (int)$post['user_id'] === (int)$user['id'] && $age >= 0 && $age <= (int)$postEditTime * 60 && (int)$post['edit_count'] < (int)$postEditCount;
 }
 
 function can_delete_post(array $post, array $user): bool
 {
     global $postDeleteTime;
+    $age = time() - strtotime($post['created_at']);
+    return (int)$post['user_id'] === (int)$user['id'] && $age >= 0 && $age <= (int)$postDeleteTime * 60;
+}
 
-    return (int)$post['user_id'] === (int)$user['id']
-        && time() - strtotime($post['created_at']) >= 0
-        && time() - strtotime($post['created_at']) <= ((int)$postDeleteTime * 60);
+function renderCommentTree(array $comments, ?int $parentId = null, int $depth = 0): void
+{
+    foreach ($comments[$parentId] ?? [] as $comment) {
+        $id = (int)$comment['id'];
+        $indent = min($depth, 4) * 20;
+        ?>
+        <div class="comment" id="comment-<?= $id ?>" style="margin-left: <?= $indent ?>px">
+            <div class="comment-head">
+                <a href="profile.php?u=<?= urlencode($comment['username']) ?>"><strong>@<?= e($comment['username']) ?></strong></a>
+                <time><?= e(formatPostDate($comment['created_at'])) ?></time>
+            </div>
+            <p><?= renderPostContent($comment['content']) ?></p>
+            <?php if (current_user()): ?>
+                <button type="button" class="comment-reply-button" data-comment-id="<?= $id ?>">Reply</button>
+                <form class="comment-reply-form" method="post" action="comments.php" data-reply-form="<?= $id ?>" hidden>
+                    <input type="hidden" name="post_id" value="<?= (int)$comment['post_id'] ?>">
+                    <input type="hidden" name="parent_id" value="<?= $id ?>">
+                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                    <textarea name="content" rows="2" placeholder="Write a reply..."></textarea>
+                    <div class="comment-form-actions"><button type="button" class="comment-cancel-button" data-comment-id="<?= $id ?>">Cancel</button><button class="button" type="submit">Reply</button></div>
+                </form>
+            <?php endif; ?>
+        </div>
+        <?php
+        renderCommentTree($comments, $id, $depth + 1);
+    }
 }
 
 function renderPost(array $post, ?array $user, string $redirect = 'index'): void
 {
+    $postId = (int)$post['id'];
+    $stmt = db()->prepare('SELECT c.id, c.post_id, c.user_id, c.parent_id, c.content, c.created_at, u.username FROM comments c JOIN users u ON u.id = c.user_id WHERE c.post_id = ? ORDER BY c.id ASC');
+    $stmt->execute([$postId]);
+    $commentRows = $stmt->fetchAll();
+    $comments = [];
+    foreach ($commentRows as $comment) $comments[$comment['parent_id'] === null ? null : (int)$comment['parent_id']][] = $comment;
+    $commentError = get_flash('comment_error');
     ?>
-    <article class="post">
+    <article class="post" id="post-<?= $postId ?>">
         <div class="post-head">
             <a class="avatar-link" href="profile.php?u=<?= urlencode($post['username']) ?>">
-                <?php if (!empty($post['avatar_path'])): ?>
-                    <img class="avatar avatar-small" src="<?= e($post['avatar_path']) ?>" alt="">
-                <?php else: ?>
-                    <span class="avatar avatar-small avatar-fallback"><?= e(strtoupper(substr($post['username'], 0, 1))) ?></span>
-                <?php endif; ?>
+                <?php if (!empty($post['avatar_path'])): ?><img class="avatar avatar-small" src="<?= e($post['avatar_path']) ?>" alt="">
+                <?php else: ?><span class="avatar avatar-small avatar-fallback"><?= e(strtoupper(substr($post['username'], 0, 1))) ?></span><?php endif; ?>
             </a>
-            <div class="post-author">
-                <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
-                <time><?= e(formatPostDate($post['created_at'])) ?></time>
-            </div>
+            <div class="post-author"><a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a><time><?= e(formatPostDate($post['created_at'])) ?></time></div>
             <?php if ($user && (int)$post['user_id'] === (int)$user['id'] && (can_edit_post($post, $user) || can_delete_post($post, $user))): ?>
-                <div class="post-menu">
-                    <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
-                    <div class="post-menu-dropdown" hidden>
-                        <?php if (can_edit_post($post, $user)): ?>
-                            <a href="edit.php?post_id=<?= (int)$post['id'] ?><?= $redirect === 'profile' ? '&redirect=profile' : '' ?>">Edit</a>
-                        <?php endif; ?>
-                        <?php if (can_delete_post($post, $user)): ?>
-                            <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
-                                <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
-                                <?php if ($redirect === 'profile'): ?>
-                                    <input type="hidden" name="redirect" value="profile">
-                                <?php endif; ?>
-                                <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                                <button type="submit">Delete</button>
-                            </form>
-                        <?php endif; ?>
-                    </div>
-                </div>
+                <div class="post-menu"><button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button><div class="post-menu-dropdown" hidden>
+                    <?php if (can_edit_post($post, $user)): ?><a href="edit.php?post_id=<?= $postId ?><?= $redirect === 'profile' ? '&redirect=profile' : '' ?>">Edit</a><?php endif; ?>
+                    <?php if (can_delete_post($post, $user)): ?><form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');"><input type="hidden" name="post_id" value="<?= $postId ?>"><?php if ($redirect === 'profile'): ?><input type="hidden" name="redirect" value="profile"><?php endif; ?><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button type="submit">Delete</button></form><?php endif; ?>
+                </div></div>
             <?php endif; ?>
         </div>
-        <?php if ($post['content'] !== ''): ?>
-            <p><?= renderPostContent($post['content']) ?></p>
-        <?php endif; ?>
-        <?php if (!empty($post['image_path'])): ?>
-            <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
-        <?php endif; ?>
-        <?php if (array_key_exists('like_count', $post)): ?>
-            <div class="post-actions">
-                <span>♥ <?= (int)$post['like_count'] ?></span>
-                <?php if ($user): ?>
-                    <form class="inline" method="post" action="like.php">
-                        <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
-                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                        <button><?= liked_by_me((int)$post['id']) ? 'Unlike' : 'Like' ?></button>
-                    </form>
-                <?php endif; ?>
-                <?php if ((int)$post['edit_count'] > 0): ?>
-                    <span class="post-edited">Edited</span>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
+        <?php if ($post['content'] !== ''): ?><p><?= renderPostContent($post['content']) ?></p><?php endif; ?>
+        <?php if (!empty($post['image_path'])): ?><img class="post-image" src="<?= e($post['image_path']) ?>" alt=""><?php endif; ?>
+        <div class="post-actions">
+            <span>♥ <?= (int)($post['like_count'] ?? 0) ?></span>
+            <?php if ($user): ?><form class="inline" method="post" action="like.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button><?= liked_by_me($postId) ? 'Unlike' : 'Like' ?></button></form><?php endif; ?>
+            <button type="button" class="comment-toggle" data-post-id="<?= $postId ?>">Comment<?= count($commentRows) ? ' ' . count($commentRows) : '' ?></button>
+            <?php if ((int)($post['edit_count'] ?? 0) > 0): ?><span class="post-edited">Edited</span><?php endif; ?>
+        </div>
+        <section class="comments" data-comments="<?= $postId ?>" hidden>
+            <?php if ($commentError): ?><p class="form-error"><?= e($commentError) ?></p><?php endif; ?>
+            <?php if ($user): ?><form class="comment-form" method="post" action="comments.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><?php if ($redirect === 'profile'): ?><input type="hidden" name="redirect" value="profile"><input type="hidden" name="redirect_user" value="<?= e($post['username']) ?>"><?php endif; ?><textarea name="content" rows="2" placeholder="Write a comment..."></textarea><div class="comment-form-actions"><button class="button" type="submit">Comment</button></div></form><?php endif; ?>
+            <?php renderCommentTree($comments); ?>
+        </section>
     </article>
     <?php
 }
 
 function formatPostDate(string $date): string
 {
-    $timestamp = strtotime($date);
-    $diff = time() - $timestamp;
-
-    if ($diff < 60) {
-        return '1 min ago';
-    }
-
-    if ($diff < 3600) {
-        $minutes = (int) floor($diff / 60);
-        return $minutes . ' min' . ($minutes === 1 ? '' : 's') . ' ago';
-    }
-
-    if ($diff < 86400) {
-        $hours = (int) floor($diff / 3600);
-        return $hours . ' hr' . ($hours === 1 ? '' : 's') . ' ago';
-    }
-
-    if ($diff < 604800) {
-        $days = (int) floor($diff / 86400);
-        return $days . ' day' . ($days === 1 ? '' : 's') . ' ago';
-    }
-
-    if ($diff < 2592000) {
-        $weeks = (int) floor($diff / 604800);
-        return $weeks . ' wk' . ($weeks === 1 ? '' : 's') . ' ago';
-    }
-
+    $timestamp = strtotime($date); $diff = time() - $timestamp;
+    if ($diff < 60) return '1 min ago';
+    if ($diff < 3600) { $minutes = (int)floor($diff / 60); return $minutes . ' min' . ($minutes === 1 ? '' : 's') . ' ago'; }
+    if ($diff < 86400) { $hours = (int)floor($diff / 3600); return $hours . ' hr' . ($hours === 1 ? '' : 's') . ' ago'; }
+    if ($diff < 604800) { $days = (int)floor($diff / 86400); return $days . ' day' . ($days === 1 ? '' : 's') . ' ago'; }
+    if ($diff < 2592000) { $weeks = (int)floor($diff / 604800); return $weeks . ' wk' . ($weeks === 1 ? '' : 's') . ' ago'; }
     return date('M j, Y', $timestamp);
 }
 
-function e(string $value): string
-{
-    return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-}
+function e(string $value): string { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
