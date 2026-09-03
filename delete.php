@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/inc/database.php';
+require_once __DIR__ . '/inc/config.php';
 
 $user = require_login();
 
@@ -30,7 +31,7 @@ if (!$post) {
 
 $age = time() - strtotime($post['created_at']);
 
-if ($age < 0 || $age > ((int)$deleteTime * 60)) {
+if ($age < 0 || $age > ((int)$postDeleteTime * 60)) {
     $target = ($_POST['redirect'] ?? '') === 'profile'
         ? 'profile.php?u=' . urlencode($post['username'])
         : 'index.php';
