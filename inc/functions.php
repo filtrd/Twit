@@ -113,7 +113,7 @@ function can_delete_post(array $post, array $user): bool
     return (int)$post['user_id'] === (int)$user['id'] && $age >= 0 && $age <= (int)$postDeleteTime * 60;
 }
 
-function renderCommentTree(array $comments, ?int $parentId = null, int $depth = 0): void
+function renderCommentTree(array $comments, ?int $parentId = null, int $depth = 0, string $fromProfile = '', string $profileUsername = ''): void
 {
     foreach ($comments[$parentId] ?? [] as $comment) {
         $id = (int)$comment['id'];
@@ -130,6 +130,7 @@ function renderCommentTree(array $comments, ?int $parentId = null, int $depth = 
                 <form class="comment-reply-form" method="post" action="comments.php" data-reply-form="<?= $id ?>" hidden>
                     <input type="hidden" name="post_id" value="<?= (int)$comment['post_id'] ?>">
                     <input type="hidden" name="parent_id" value="<?= $id ?>">
+                    <?php if ($fromProfile === 'profile' && $profileUsername !== ''): ?><input type="hidden" name="from" value="profile"><input type="hidden" name="u" value="<?= e($profileUsername) ?>"><?php endif; ?>
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                     <textarea name="content" rows="2" placeholder="Write a reply..."></textarea>
                     <div class="comment-form-actions"><button type="button" class="comment-cancel-button" data-comment-id="<?= $id ?>">Cancel</button><button class="button" type="submit">Reply</button></div>
@@ -137,7 +138,7 @@ function renderCommentTree(array $comments, ?int $parentId = null, int $depth = 
             <?php endif; ?>
         </div>
         <?php
-        renderCommentTree($comments, $id, $depth + 1);
+        renderCommentTree($comments, $id, $depth + 1, $fromProfile, $profileUsername);
     }
 }
 
