@@ -58,7 +58,7 @@ if (!empty($_FILES['image']['name'])) {
     imagealphablending($image, false);
     imagesavealpha($image, true);
 
-    $uploadDir = __DIR__ . '/uploads';
+    $uploadDir = __DIR__ . '/uploads/posts';
 
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0775, true);
@@ -76,7 +76,7 @@ if (!empty($_FILES['image']['name'])) {
 
     imagedestroy($image);
 
-    $imagePath = 'uploads/' . $filename;
+    $imagePath = 'uploads/posts/' . $filename;
 }
 
 if (($content !== '' && postCharacterCount($content) <= 280) || $imagePath !== null) {
