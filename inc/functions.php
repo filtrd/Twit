@@ -149,6 +149,7 @@ function renderPost(array $post, ?array $user, string $redirect = 'index'): void
     if ($redirect === 'profile') {
         $commentUrl .= '&from=profile&u=' . urlencode($post['username']);
     }
+    $isLiked = $user ? liked_by_me($postId) : false;
     ?>
     <article class="post" id="post-<?= $postId ?>">
         <div class="post-head">
@@ -167,9 +168,9 @@ function renderPost(array $post, ?array $user, string $redirect = 'index'): void
         <?php if ($post['content'] !== ''): ?><p><?= renderPostContent($post['content']) ?></p><?php endif; ?>
         <?php if (!empty($post['image_path'])): ?><img class="post-image" src="<?= e($post['image_path']) ?>" alt=""><?php endif; ?>
         <div class="post-actions">
-            <span>♥ <?= (int)($post['like_count'] ?? 0) ?></span>
-            <?php if ($user): ?><form class="inline" method="post" action="like.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button><?= liked_by_me($postId) ? 'Unlike' : 'Like' ?></button></form><?php endif; ?>
-            <a class="comment-toggle" href="<?= e($commentUrl) ?>">Comment<?= !empty($post['comment_count']) ? ' ' . (int)$post['comment_count'] : '' ?></a>
+            <?php if ($user): ?><form class="inline" method="post" action="like.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button type="submit" class="like-button" aria-label="<?= $isLiked ? 'Unlike post' : 'Like post' ?>" aria-pressed="<?= $isLiked ? 'true' : 'false' ?>"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg><span><?= (int)($post['like_count'] ?? 0) ?></span></button></form>
+            <?php else: ?><span class="like-count"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg><span><?= (int)($post['like_count'] ?? 0) ?></span></span><?php endif; ?>
+            <a class="comment-toggle" href="<?= e($commentUrl) ?>" aria-label="View comments"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-9 8.5 9.17 9.17 0 0 1-4-.9L3 21l1.9-4.7A8.38 8.38 0 0 1 3 11.5 8.38 8.38 0 0 1 12 3a8.38 8.38 0 0 1 9 8.5z"></path></svg><span><?= (int)($post['comment_count'] ?? 0) ?></span></a>
             <?php if ((int)($post['edit_count'] ?? 0) > 0): ?><span class="post-edited">Edited</span><?php endif; ?>
         </div>
     </article>
