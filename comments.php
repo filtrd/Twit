@@ -47,7 +47,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = db()->prepare('INSERT INTO comments (post_id, user_id, parent_id, content) VALUES (?, ?, ?, ?)');
     $stmt->execute([$postId, $user['id'], $parentId, $content]);
 
-    header('Location: comments.php?post_id=' . $postId);
+    $redirect = ($_POST['from'] ?? '') === 'profile' && trim($_POST['u'] ?? '') !== ''
+        ? '&from=profile&u=' . urlencode(trim($_POST['u']))
+        : '';
+    header('Location: comments.php?post_id=' . $postId . $redirect);
     exit;
 }
 
@@ -56,6 +59,12 @@ if ($postId <= 0) {
     header('Location: index.php');
     exit;
 }
+
+$fromProfile = ($_GET['from'] ?? '') === 'profile';
+$profileUsername = trim($_GET['u'] ?? '');
+$backUrl = $fromProfile && $profileUsername !== ''
+    ? 'profile.php?u=' . urlencode($profileUsername)
+    : 'index.php';
 
 $stmt = db()->prepare('SELECT p.id, p.content, p.image_path, p.created_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path, (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count, (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count FROM posts p JOIN users u ON u.id = p.user_id WHERE p.id = ?');
 $stmt->execute([$postId]);
@@ -103,9 +112,9 @@ $commentError = get_flash('comment_error');
 
 <main>
     <div class="wrap">
-        <p><a href="index.php">&larr; Back to feed</a></p>
+        <p><a href="<?= e($backUrl) ?>">&larr; Back</a></p>
 
-        <?php renderPost($post, $user); ?>
+        <?php renderPost($post, $user, $fromProfile ? 'profile' : 'index'); ?>
 
         <section class="comments-page">
             <h1>Comments<?= $commentRows ? ' ' . count($commentRows) : '' ?></h1>
@@ -115,6 +124,7 @@ $commentError = get_flash('comment_error');
             <?php if ($user): ?>
                 <form class="comment-form" method="post" action="comments.php">
                     <input type="hidden" name="post_id" value="<?= $postId ?>">
+                    <?php if ($fromProfile && $profileUsername !== ''): ?><input type="hidden" name="from" value="profile"><input type="hidden" name="u" value="<?= e($profileUsername) ?>"><?php endif; ?>
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                     <textarea name="content" rows="2" placeholder="Write a comment..."></textarea>
                     <div class="comment-form-actions"><button class="button" type="submit">Comment</button></div>
