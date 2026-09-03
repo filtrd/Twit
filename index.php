@@ -21,6 +21,8 @@ function liked_by_me(int $postId): bool {
 }
 
 function can_edit_post(array $post, array $user): bool {
+    global $postEditTime, $postEditCount;
+
     return (int)$post['user_id'] === (int)$user['id']
         && time() - strtotime($post['created_at']) >= 0
         && time() - strtotime($post['created_at']) <= ((int)$postEditTime * 60)
@@ -28,6 +30,8 @@ function can_edit_post(array $post, array $user): bool {
 }
 
 function can_delete_post(array $post, array $user): bool {
+    global $postDeleteTime;
+
     return (int)$post['user_id'] === (int)$user['id']
         && time() - strtotime($post['created_at']) >= 0
         && time() - strtotime($post['created_at']) <= ((int)$postDeleteTime * 60);
@@ -159,7 +163,7 @@ function can_delete_post(array $post, array $user): bool {
 </footer>
 
 <script>
-const textarea = document.querySelector('textarea[name="content"]');
+const textarea = document.querySelector('textarea[name="content"]);
 const counter = document.getElementById('char-count');
 const imageButton = document.getElementById('image-button');
 const imageUpload = document.getElementById('image-upload');
