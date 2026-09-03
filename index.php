@@ -110,6 +110,13 @@ function liked_by_me(int $postId): bool {
                                 <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                                 <button><?= liked_by_me((int)$post['id']) ? 'Unlike' : 'Like' ?></button>
                             </form>
+                            <?php if ((int)$post['user_id'] === (int)$user['id']): ?>
+                                <form class="inline" method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
+                                    <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                    <button type="submit">Delete</button>
+                                </form>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </article>
@@ -130,7 +137,7 @@ function liked_by_me(int $postId): bool {
 </footer>
 
 <script>
-const textarea = document.querySelector('textarea[name="content"]');
+const textarea = document.querySelector('textarea[name="content"]);
 const counter = document.getElementById('char-count');
 const imageButton = document.getElementById('image-button');
 const imageUpload = document.getElementById('image-upload');
