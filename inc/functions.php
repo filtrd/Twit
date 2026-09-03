@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 const DB_PATH = __DIR__ . '/../data/microblog.sqlite';
+const POST_URL_LENGTH = 23;
+const POST_URL_PATTERN = '~https?://[^\s<]+~i';
 
 function db(): PDO
 {
@@ -61,6 +63,72 @@ function verify_csrf(): void
         http_response_code(403);
         exit('Invalid CSRF token');
     }
+}
+
+function postCharacterCount(string $content): int
+{
+    $count = 0;
+    $offset = 0;
+
+    if (preg_match_all(POST_URL_PATTERN, $content, $matches, PREG_OFFSET_CAPTURE)) {
+        foreach ($matches[0] as $match) {
+            $url = $match[0];
+            $position = $match[1];
+
+            $count += mb_strlen(substr($content, $offset, $position - $offset));
+
+            $trimmedUrl = rtrim($url, '.,!?;:)]}');
+            $trailing = substr($url, strlen($trimmedUrl));
+
+            $count += POST_URL_LENGTH;
+            $count += mb_strlen($trailing);
+
+            $offset = $position + strlen($url);
+        }
+    }
+
+    $count += mb_strlen(substr($content, $offset));
+    return $count;
+}
+
+function shortenUrlForDisplay(string $url): string
+{
+    $display = preg_replace('~^https?://~i', '', $url);
+    $display = preg_replace('~^www\.~i', '', $display);
+
+    if (mb_strlen($display) > 42) {
+        return mb_strimwidth($display, 0, 42, '…', 'UTF-8');
+    }
+
+    return $display;
+}
+
+function renderPostContent(string $content): string
+{
+    $output = '';
+    $offset = 0;
+
+    if (preg_match_all(POST_URL_PATTERN, $content, $matches, PREG_OFFSET_CAPTURE)) {
+        foreach ($matches[0] as $match) {
+            $url = $match[0];
+            $position = $match[1];
+
+            $output .= e(substr($content, $offset, $position - $offset));
+
+            $trimmedUrl = rtrim($url, '.,!?;:)]}');
+            $trailing = substr($url, strlen($trimmedUrl));
+
+            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer" title="' . e($trimmedUrl) . '">'
+                . e(shortenUrlForDisplay($trimmedUrl))
+                . '</a>';
+
+            $output .= e($trailing);
+            $offset = $position + strlen($url);
+        }
+    }
+
+    $output .= e(substr($content, $offset));
+    return nl2br($output);
 }
 
 function formatPostDate(string $date): string
