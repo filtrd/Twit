@@ -107,7 +107,7 @@ function can_delete_post(array $post, array $user): bool {
                             <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
                             <time><?= e(formatPostDate($post['created_at'])) ?></time>
                         </div>
-                        <?php if ($user && (int)$post['user_id'] === (int)$user['id']): ?>
+                        <?php if ($user && (int)$post['user_id'] === (int)$user['id'] && (can_edit_post($post, $user) || can_delete_post($post, $user))): ?>
                             <div class="post-menu">
                                 <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
                                 <div class="post-menu-dropdown" hidden>
