@@ -79,7 +79,7 @@ if (!empty($_FILES['image']['name'])) {
     $imagePath = 'uploads/' . $filename;
 }
 
-if (($content !== '' && mb_strlen($content) <= 280) || $imagePath !== null) {
+if (($content !== '' && postCharacterCount($content) <= 280) || $imagePath !== null) {
     $stmt = db()->prepare(
         'INSERT INTO posts (user_id, content, image_path) VALUES (?, ?, ?)'
     );
