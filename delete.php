@@ -15,7 +15,7 @@ verify_csrf();
 $postId = (int)($_POST['post_id'] ?? 0);
 
 $stmt = db()->prepare(
-    'SELECT p.image_path, u.username
+    'SELECT p.image_path, p.created_at, u.username
      FROM posts p
      JOIN users u ON u.id = p.user_id
      WHERE p.id = ? AND p.user_id = ?'
@@ -25,6 +25,16 @@ $post = $stmt->fetch();
 
 if (!$post) {
     header('Location: index.php');
+    exit;
+}
+
+$age = time() - strtotime($post['created_at']);
+
+if ($age < 0 || $age > ((int)$deleteTime * 60)) {
+    $target = ($_POST['redirect'] ?? '') === 'profile'
+        ? 'profile.php?u=' . urlencode($post['username'])
+        : 'index.php';
+    header('Location: ' . $target);
     exit;
 }
 
