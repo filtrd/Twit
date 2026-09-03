@@ -348,6 +348,11 @@ main {
     display: inline;
 }
 
+.post-actions form.inline {
+    display: inline-flex;
+    align-items: center;
+}
+
 .like-button,
 .like-count,
 .comment-toggle {
