@@ -348,6 +348,10 @@ main {
     display: inline;
 }
 
+.post-edited {
+    margin-left: auto;
+}
+
 .post-link {
     color: purple;
     font-weight: 700;
