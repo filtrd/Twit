@@ -29,7 +29,10 @@ function liked_by_me(int $postId): bool {
 <body>
 <header class="topbar">
     <div class="wrap">
-        <a class="logo" href="index.php"><?= e($siteName) ?></a>
+        <div class="brand">
+            <a class="logo" href="index.php"><?= e($siteName) ?></a>
+            <p class="tagline">Share short thoughts with the world.</p>
+        </div>
         <nav>
             <a href="./">Home</a>
             <?php if ($user): ?>
@@ -48,11 +51,6 @@ function liked_by_me(int $postId): bool {
 
 <main>
     <div class="wrap">
-        <section class="hero">
-            <h1>Welcome to <?= e($siteName) ?></h1>
-            <p>Share short thoughts with the world.</p>
-        </section>
-
         <?php if ($user): ?>
             <form class="composer" method="post" action="post.php" enctype="multipart/form-data">
                 <textarea name="content" placeholder="What's happening?"></textarea>
