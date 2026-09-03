@@ -79,6 +79,11 @@ function get_flash(string $key): ?string
 
 function postCharacterCount(string $content): int
 {
+    // HTML form submission can send textarea line breaks as CRLF, while
+    // JavaScript treats them as a single character. Normalize them so the
+    // client-side and server-side counts agree.
+    $content = str_replace(["\r\n", "\r"], "\n", $content);
+
     $count = 0;
     $offset = 0;
 
