@@ -13,9 +13,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 verify_csrf();
 
 $content = trim($_POST['content'] ?? '');
+$hasImage = !empty($_FILES['image']['name']);
+
+if ($content === '' && !$hasImage) {
+    set_flash('post_error', 'Please write something or add an image.');
+    set_flash('post_draft', $content);
+    header('Location: index.php');
+    exit;
+}
+
+if ($content !== '' && postCharacterCount($content) > (int)$maxPostLength) {
+    set_flash('post_error', 'Your post is too long. Maximum length is ' . (int)$maxPostLength . ' characters.');
+    set_flash('post_draft', $content);
+    header('Location: index.php');
+    exit;
+}
+
 $imagePath = null;
 
-if (!empty($_FILES['image']['name'])) {
+if ($hasImage) {
     $uploadError = $_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE;
 
     if ($uploadError !== UPLOAD_ERR_OK) {
@@ -29,12 +45,14 @@ if (!empty($_FILES['image']['name'])) {
         };
 
         set_flash('post_error', $message);
+        set_flash('post_draft', $content);
         header('Location: index.php');
         exit;
     }
 
     if ($_FILES['image']['size'] > 5 * 1024 * 1024) {
         set_flash('post_error', 'Image is too large. Maximum size is 5 MB.');
+        set_flash('post_draft', $content);
         header('Location: index.php');
         exit;
     }
@@ -50,12 +68,14 @@ if (!empty($_FILES['image']['name'])) {
 
     if (!in_array($mime, $allowedMimes, true)) {
         set_flash('post_error', 'Please upload a JPEG, PNG, or WebP image.');
+        set_flash('post_draft', $content);
         header('Location: index.php');
         exit;
     }
 
     if (!function_exists('imagecreatefromstring') || !function_exists('imagewebp')) {
         set_flash('post_error', 'Image processing is unavailable. Please try again later.');
+        set_flash('post_draft', $content);
         header('Location: index.php');
         exit;
     }
@@ -66,6 +86,7 @@ if (!empty($_FILES['image']['name'])) {
 
     if ($image === false) {
         set_flash('post_error', "We couldn't process that image. Please try another one.");
+        set_flash('post_draft', $content);
         header('Location: index.php');
         exit;
     }
@@ -79,6 +100,7 @@ if (!empty($_FILES['image']['name'])) {
     if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
         imagedestroy($image);
         set_flash('post_error', 'Image could not be saved. Please try again later.');
+        set_flash('post_draft', $content);
         header('Location: index.php');
         exit;
     }
@@ -90,6 +112,7 @@ if (!empty($_FILES['image']['name'])) {
         imagedestroy($image);
         @unlink($destination);
         set_flash('post_error', 'Image could not be saved. Please try again later.');
+        set_flash('post_draft', $content);
         header('Location: index.php');
         exit;
     }
@@ -99,16 +122,14 @@ if (!empty($_FILES['image']['name'])) {
     $imagePath = 'uploads/posts/' . $filename;
 }
 
-if (($content !== '' && postCharacterCount($content) <= (int)$maxPostLength) || $imagePath !== null) {
-    $stmt = db()->prepare(
-        'INSERT INTO posts (user_id, content, image_path) VALUES (?, ?, ?)'
-    );
+$stmt = db()->prepare(
+    'INSERT INTO posts (user_id, content, image_path) VALUES (?, ?, ?)'
+);
 
-    $stmt->execute([
-        $user['id'],
-        $content,
-        $imagePath
-    ]);
-}
+$stmt->execute([
+    $user['id'],
+    $content,
+    $imagePath
+]);
 
 header('Location: index.php');
