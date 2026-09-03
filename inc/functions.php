@@ -108,7 +108,7 @@ function renderPostContent(string $content): string
 
             $parsed = parse_url($trimmedUrl);
             $host = $parsed['host'] ?? $trimmedUrl;
-            $host = preg_replace('~^www\.~i', '', $host);
+            $host = preg_replace('~^www\\.~i', '', $host);
 
             $path = $parsed['path'] ?? '';
             $path = trim($path, '/');
@@ -134,6 +134,95 @@ function renderPostContent(string $content): string
 
     $output .= e(substr($content, $offset));
     return nl2br($output);
+}
+
+function liked_by_me(int $postId): bool
+{
+    if (!isset($_SESSION['user_id'])) {
+        return false;
+    }
+
+    $stmt = db()->prepare('SELECT 1 FROM likes WHERE user_id = ? AND post_id = ?');
+    $stmt->execute([$_SESSION['user_id'], $postId]);
+    return (bool)$stmt->fetchColumn();
+}
+
+function can_edit_post(array $post, array $user): bool
+{
+    global $postEditTime, $postEditCount;
+
+    return (int)$post['user_id'] === (int)$user['id']
+        && time() - strtotime($post['created_at']) >= 0
+        && time() - strtotime($post['created_at']) <= ((int)$postEditTime * 60)
+        && (int)$post['edit_count'] < (int)$postEditCount;
+}
+
+function can_delete_post(array $post, array $user): bool
+{
+    global $postDeleteTime;
+
+    return (int)$post['user_id'] === (int)$user['id']
+        && time() - strtotime($post['created_at']) >= 0
+        && time() - strtotime($post['created_at']) <= ((int)$postDeleteTime * 60);
+}
+
+function renderPost(array $post, ?array $user, string $redirect = 'index'): void
+{
+    ?>
+    <article class="post">
+        <div class="post-head">
+            <a class="avatar-link" href="profile.php?u=<?= urlencode($post['username']) ?>">
+                <?php if (!empty($post['avatar_path'])): ?>
+                    <img class="avatar avatar-small" src="<?= e($post['avatar_path']) ?>" alt="">
+                <?php else: ?>
+                    <span class="avatar avatar-small avatar-fallback"><?= e(strtoupper(substr($post['username'], 0, 1))) ?></span>
+                <?php endif; ?>
+            </a>
+            <div class="post-author">
+                <a href="profile.php?u=<?= urlencode($post['username']) ?>"><strong>@<?= e($post['username']) ?></strong></a>
+                <time><?= e(formatPostDate($post['created_at'])) ?></time>
+            </div>
+            <?php if ($user && (int)$post['user_id'] === (int)$user['id'] && (can_edit_post($post, $user) || can_delete_post($post, $user))): ?>
+                <div class="post-menu">
+                    <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
+                    <div class="post-menu-dropdown" hidden>
+                        <?php if (can_edit_post($post, $user)): ?>
+                            <a href="edit.php?post_id=<?= (int)$post['id'] ?><?= $redirect === 'profile' ? '&redirect=profile' : '' ?>">Edit</a>
+                        <?php endif; ?>
+                        <?php if (can_delete_post($post, $user)): ?>
+                            <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
+                                <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                                <?php if ($redirect === 'profile'): ?>
+                                    <input type="hidden" name="redirect" value="profile">
+                                <?php endif; ?>
+                                <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                <button type="submit">Delete</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php if ($post['content'] !== ''): ?>
+            <p><?= renderPostContent($post['content']) ?></p>
+        <?php endif; ?>
+        <?php if (!empty($post['image_path'])): ?>
+            <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
+        <?php endif; ?>
+        <?php if (array_key_exists('like_count', $post)): ?>
+            <div class="post-actions">
+                <span>♥ <?= (int)$post['like_count'] ?></span>
+                <?php if ($user): ?>
+                    <form class="inline" method="post" action="like.php">
+                        <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                        <button><?= liked_by_me((int)$post['id']) ? 'Unlike' : 'Like' ?></button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </article>
+    <?php
 }
 
 function formatPostDate(string $date): string
