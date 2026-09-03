@@ -84,7 +84,7 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
                     <p><?= $postCount ?> Posts &middot; <?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
                 </div>
                 <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
-                    <form class="follow-form" method="post" action="follow.php"><input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button"><?= $isFollowing ? 'Unfollow' : 'Follow' ?></button></form>
+                    <form class="follow-form" method="post" action="follow.php" style="margin-left:auto;"><input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button"><?= $isFollowing ? 'Unfollow' : 'Follow' ?></button></form>
                 <?php endif; ?>
             </div>
 
