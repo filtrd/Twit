@@ -17,7 +17,7 @@ if (!$post) {
 }
 
 $age = time() - strtotime($post['created_at']);
-$canEdit = $age >= 0 && $age <= ((int)$editTime * 60) && (int)$post['edit_count'] < (int)$editCount;
+$canEdit = $age >= 0 && $age <= ((int)$postEditTime * 60) && (int)$post['edit_count'] < (int)$postEditCount;
 $redirect = ($_POST['redirect'] ?? $_GET['redirect'] ?? '') === 'profile' ? 'profile' : 'index';
 $error = '';
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = db()->prepare(
                 'UPDATE posts SET content = ?, edit_count = edit_count + 1 WHERE id = ? AND user_id = ? AND edit_count < ?'
             );
-            $stmt->execute([$content, $postId, $user['id'], (int)$editCount]);
+            $stmt->execute([$content, $postId, $user['id'], (int)$postEditCount]);
 
             $target = $redirect === 'profile'
                 ? 'profile.php?u=' . urlencode($user['username'])
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                     <div class="edit-post-actions">
-                        <span>You have <?= (int)$editCount - (int)$post['edit_count'] ?> edits and <?= max(0, (int)$editTime - (int)floor($age / 60)) ?> minutes left</span>
+                        <span>You have <?= (int)$postEditCount - (int)$post['edit_count'] ?> edits and <?= max(0, (int)$postEditTime - (int)floor($age / 60)) ?> minutes left</span>
                         <div>
                             <a href="<?= $redirect === 'profile' ? 'profile.php?u=' . urlencode($user['username']) : 'index.php' ?>">Cancel</a>
                             <button class="button" type="submit">Save</button>
