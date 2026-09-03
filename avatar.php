@@ -21,18 +21,6 @@ function avatar_error(string $message, string $profileUrl): never
     exit;
 }
 
-if (isset($_POST['remove'])) {
-    if (!empty($user['avatar_path'])) {
-        @unlink(__DIR__ . '/' . $user['avatar_path']);
-    }
-
-    $stmt = db()->prepare('UPDATE users SET avatar_path = NULL WHERE id = ?');
-    $stmt->execute([$user['id']]);
-
-    header('Location: ' . $profileUrl);
-    exit;
-}
-
 if (empty($_FILES['avatar']['name'])) {
     avatar_error('Please select an image to upload.', $profileUrl);
 }
@@ -135,3 +123,4 @@ if (!empty($user['avatar_path'])) {
 }
 
 header('Location: ' . $profileUrl);
+exit;
