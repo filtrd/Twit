@@ -107,15 +107,18 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                             <div class="post-menu">
                                 <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
                                 <div class="post-menu-dropdown" hidden>
-                                    <?php if (time() - strtotime($post['created_at']) >= 0 && time() - strtotime($post['created_at']) <= 300 && (int)$post['edit_count'] < 2): ?>
+                                    <?php $postAge = time() - strtotime($post['created_at']); ?>
+                                    <?php if ($postAge >= 0 && $postAge <= ((int)$editTime * 60) && (int)$post['edit_count'] < (int)$editCount): ?>
                                         <a href="edit.php?post_id=<?= (int)$post['id'] ?>&redirect=profile">Edit</a>
                                     <?php endif; ?>
-                                    <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
-                                        <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
-                                        <input type="hidden" name="redirect" value="profile">
-                                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                                        <button type="submit">Delete</button>
-                                    </form>
+                                    <?php if ($postAge >= 0 && $postAge <= ((int)$deleteTime * 60)): ?>
+                                        <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
+                                            <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                                            <input type="hidden" name="redirect" value="profile">
+                                            <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                            <button type="submit">Delete</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         <?php endif; ?>
