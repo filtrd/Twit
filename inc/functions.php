@@ -65,6 +65,18 @@ function verify_csrf(): void
     }
 }
 
+function set_flash(string $key, string $message): void
+{
+    $_SESSION['flash'][$key] = $message;
+}
+
+function get_flash(string $key): ?string
+{
+    $message = $_SESSION['flash'][$key] ?? null;
+    unset($_SESSION['flash'][$key]);
+    return $message;
+}
+
 function postCharacterCount(string $content): int
 {
     $count = 0;
