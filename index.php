@@ -5,6 +5,7 @@ require_once __DIR__ . '/inc/config.php';
 
 $user = current_user();
 $postError = get_flash('post_error');
+$postDraft = get_flash('post_draft') ?? '';
 $stmt = db()->query(<<<'SQL'
 SELECT p.id, p.content, p.image_path, p.created_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path,
        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count
@@ -48,7 +49,7 @@ $posts = $stmt->fetchAll();
     <div class="wrap">
         <?php if ($user): ?>
             <form class="composer" method="post" action="post.php" enctype="multipart/form-data">
-                <textarea name="content" placeholder="What's happening?"></textarea>
+                <textarea name="content" placeholder="What's happening?"><?= e($postDraft) ?></textarea>
                 <input type="file" id="image-upload" name="image" accept="image/jpeg,image/png,image/webp" hidden>
 
                 <div class="composer-tools">
