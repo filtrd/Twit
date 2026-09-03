@@ -107,6 +107,16 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                     <?php if (!empty($post['image_path'])): ?>
                         <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
                     <?php endif; ?>
+                    <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
+                        <div class="post-actions">
+                            <form class="inline" method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
+                                <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                                <input type="hidden" name="redirect" value="profile">
+                                <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </div>
+                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
 
