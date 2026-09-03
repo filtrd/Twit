@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    avatar_path TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -42,6 +43,24 @@ CREATE TABLE IF NOT EXISTS follows (
     CHECK (follower_id != following_id)
 );
 SQL);
+
+/*
+ * Add avatar_path for databases created before avatar uploads were added.
+ */
+$columns = $pdo->query('PRAGMA table_info(users)')->fetchAll();
+
+$hasAvatarPath = false;
+
+foreach ($columns as $column) {
+    if ($column['name'] === 'avatar_path') {
+        $hasAvatarPath = true;
+        break;
+    }
+}
+
+if (!$hasAvatarPath) {
+    $pdo->exec('ALTER TABLE users ADD COLUMN avatar_path TEXT');
+}
 
 /*
  * Older databases had CHECK(length(content) <= 280) on posts.content.
