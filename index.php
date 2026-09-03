@@ -7,7 +7,7 @@ $user = current_user();
 $postError = get_flash('post_error');
 $postDraft = get_flash('post_draft') ?? '';
 $stmt = db()->query(<<<'SQL'
-SELECT p.id, p.content, p.image_path, p.created_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path,
+SELECT p.id, p.content, p.image_path, p.created_at, p.updated_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path,
        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
 FROM posts p
