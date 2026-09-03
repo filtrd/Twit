@@ -32,6 +32,8 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
     $stmt->execute([$user['id'], $profile['id']]);
     $isFollowing = (bool)$stmt->fetchColumn();
 }
+
+$avatarError = trim($_GET['avatar_error'] ?? '');
 ?>
 <!doctype html>
 <html lang="en">
@@ -78,6 +80,10 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                     <p><?= $postCount ?> Posts &middot; <?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
                 </div>
             </div>
+
+            <?php if ($avatarError): ?>
+                <p class="error"><?= e($avatarError) ?></p>
+            <?php endif; ?>
 
             <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
                 <form class="avatar-form" method="post" action="avatar.php" enctype="multipart/form-data">
