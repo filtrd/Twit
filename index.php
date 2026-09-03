@@ -22,8 +22,15 @@ function liked_by_me(int $postId): bool {
 
 function can_edit_post(array $post, array $user): bool {
     return (int)$post['user_id'] === (int)$user['id']
-        && time() - strtotime($post['created_at']) <= 300
-        && (int)$post['edit_count'] < 2;
+        && time() - strtotime($post['created_at']) >= 0
+        && time() - strtotime($post['created_at']) <= ((int)$editTime * 60)
+        && (int)$post['edit_count'] < (int)$editCount;
+}
+
+function can_delete_post(array $post, array $user): bool {
+    return (int)$post['user_id'] === (int)$user['id']
+        && time() - strtotime($post['created_at']) >= 0
+        && time() - strtotime($post['created_at']) <= ((int)$deleteTime * 60);
 }
 ?>
 <!doctype html>
@@ -107,11 +114,13 @@ function can_edit_post(array $post, array $user): bool {
                                     <?php if (can_edit_post($post, $user)): ?>
                                         <a href="edit.php?post_id=<?= (int)$post['id'] ?>">Edit</a>
                                     <?php endif; ?>
-                                    <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
-                                        <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
-                                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                                        <button type="submit">Delete</button>
-                                    </form>
+                                    <?php if (can_delete_post($post, $user)): ?>
+                                        <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
+                                            <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                                            <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                            <button type="submit">Delete</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         <?php endif; ?>
