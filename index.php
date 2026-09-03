@@ -23,14 +23,14 @@ function liked_by_me(int $postId): bool {
 function can_edit_post(array $post, array $user): bool {
     return (int)$post['user_id'] === (int)$user['id']
         && time() - strtotime($post['created_at']) >= 0
-        && time() - strtotime($post['created_at']) <= ((int)$editTime * 60)
-        && (int)$post['edit_count'] < (int)$editCount;
+        && time() - strtotime($post['created_at']) <= ((int)$postEditTime * 60)
+        && (int)$post['edit_count'] < (int)$postEditCount;
 }
 
 function can_delete_post(array $post, array $user): bool {
     return (int)$post['user_id'] === (int)$user['id']
         && time() - strtotime($post['created_at']) >= 0
-        && time() - strtotime($post['created_at']) <= ((int)$deleteTime * 60);
+        && time() - strtotime($post['created_at']) <= ((int)$postDeleteTime * 60);
 }
 ?>
 <!doctype html>
