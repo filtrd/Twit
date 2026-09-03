@@ -13,6 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 verify_csrf();
 
 $profileUrl = 'profile.php?u=' . urlencode($user['username']);
+$maxAvatarSize = 2 * 1024 * 1024;
+
+function avatar_error(string $message, string $profileUrl): never
+{
+    header('Location: ' . $profileUrl . '&avatar_error=' . urlencode($message));
+    exit;
+}
 
 if (isset($_POST['remove'])) {
     if (!empty($user['avatar_path'])) {
@@ -27,18 +34,28 @@ if (isset($_POST['remove'])) {
 }
 
 if (empty($_FILES['avatar']['name'])) {
-    header('Location: ' . $profileUrl);
-    exit;
+    avatar_error('Please select an image to upload.', $profileUrl);
 }
 
-if ($_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
-    header('Location: ' . $profileUrl);
-    exit;
+$uploadError = $_FILES['avatar']['error'];
+
+if ($uploadError !== UPLOAD_ERR_OK) {
+    $message = match ($uploadError) {
+        UPLOAD_ERR_INI_SIZE,
+        UPLOAD_ERR_FORM_SIZE => 'Avatar is too large. Maximum size is 2 MB.',
+        UPLOAD_ERR_PARTIAL => 'Avatar upload was incomplete. Please try again.',
+        UPLOAD_ERR_NO_FILE => 'Please select an image to upload.',
+        UPLOAD_ERR_NO_TMP_DIR,
+        UPLOAD_ERR_CANT_WRITE => 'Avatar upload failed. Please try again.',
+        UPLOAD_ERR_EXTENSION => 'Avatar upload was stopped by the server.',
+        default => 'Avatar upload failed. Please try again.',
+    };
+
+    avatar_error($message, $profileUrl);
 }
 
-if ($_FILES['avatar']['size'] > 5 * 1024 * 1024) {
-    header('Location: ' . $profileUrl);
-    exit;
+if ($_FILES['avatar']['size'] > $maxAvatarSize) {
+    avatar_error('Avatar is too large. Maximum size is 2 MB.', $profileUrl);
 }
 
 $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -51,20 +68,17 @@ $allowedMimes = [
 ];
 
 if (!in_array($mime, $allowedMimes, true)) {
-    header('Location: ' . $profileUrl);
-    exit;
+    avatar_error('Please upload a JPEG, PNG, or WebP image.', $profileUrl);
 }
 
 if (!function_exists('imagecreatefromstring') || !function_exists('imagecreatetruecolor') || !function_exists('imagecopyresampled') || !function_exists('imagewebp')) {
-    header('Location: ' . $profileUrl);
-    exit;
+    avatar_error('Avatar processing is unavailable. Please contact the site administrator.', $profileUrl);
 }
 
 $image = imagecreatefromstring(file_get_contents($_FILES['avatar']['tmp_name']));
 
 if ($image === false) {
-    header('Location: ' . $profileUrl);
-    exit;
+    avatar_error("We couldn't process that image. Please try another one.", $profileUrl);
 }
 
 $width = imagesx($image);
@@ -106,8 +120,7 @@ $destination = $uploadDir . '/' . $filename;
 if (!imagewebp($avatar, $destination, 82)) {
     imagedestroy($avatar);
     @unlink($destination);
-    header('Location: ' . $profileUrl);
-    exit;
+    avatar_error('Avatar upload failed. Please try again.', $profileUrl);
 }
 
 imagedestroy($avatar);
