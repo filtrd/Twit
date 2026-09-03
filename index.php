@@ -4,6 +4,7 @@ require_once __DIR__ . '/inc/database.php';
 require_once __DIR__ . '/inc/config.php';
 
 $user = current_user();
+$postError = get_flash('post_error');
 $stmt = db()->query(<<<'SQL'
 SELECT p.id, p.content, p.image_path, p.created_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path,
        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count
@@ -70,6 +71,11 @@ $posts = $stmt->fetchAll();
                     </div>
                 </div>
             </form>
+            <?php if ($postError): ?>
+                <p class="form-error"><?= e($postError) ?></p>
+            <?php endif; ?>
+        <?php elseif ($postError): ?>
+            <p class="form-error"><?= e($postError) ?></p>
         <?php endif; ?>
 
         <section class="feed">
