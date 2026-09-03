@@ -135,7 +135,7 @@ function liked_by_me(int $postId): bool {
 </footer>
 
 <script>
-const textarea = document.querySelector('textarea[name="content"]);
+const textarea = document.querySelector('textarea[name="content"]');
 const counter = document.getElementById('char-count');
 const imageButton = document.getElementById('image-button');
 const imageUpload = document.getElementById('image-upload');
