@@ -106,7 +106,21 @@ function renderPostContent(string $content): string
             $trimmedUrl = rtrim($url, '.,!?;:)]}');
             $trailing = substr($url, strlen($trimmedUrl));
 
-            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . 'link' . '</a>';
+            $parsed = parse_url($trimmedUrl);
+            $display = $parsed['host'] ?? $trimmedUrl;
+            $display = preg_replace('~^www\.~i', '', $display);
+
+            $hasMore = (!empty($parsed['path']) && $parsed['path'] !== '/')
+                || !empty($parsed['query'])
+                || !empty($parsed['fragment']);
+
+            if ($hasMore) {
+                $display .= '…';
+            }
+
+            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">'
+                . e($display)
+                . '</a>';
 
             $output .= e($trailing);
             $offset = $position + strlen($url);
