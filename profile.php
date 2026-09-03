@@ -108,10 +108,10 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                                 <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
                                 <div class="post-menu-dropdown" hidden>
                                     <?php $postAge = time() - strtotime($post['created_at']); ?>
-                                    <?php if ($postAge >= 0 && $postAge <= ((int)$editTime * 60) && (int)$post['edit_count'] < (int)$editCount): ?>
+                                    <?php if ($postAge >= 0 && $postAge <= ((int)$postEditTime * 60) && (int)$post['edit_count'] < (int)$postEditCount): ?>
                                         <a href="edit.php?post_id=<?= (int)$post['id'] ?>&redirect=profile">Edit</a>
                                     <?php endif; ?>
-                                    <?php if ($postAge >= 0 && $postAge <= ((int)$deleteTime * 60)): ?>
+                                    <?php if ($postAge >= 0 && $postAge <= ((int)$postDeleteTime * 60)): ?>
                                         <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
                                             <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
                                             <input type="hidden" name="redirect" value="profile">
