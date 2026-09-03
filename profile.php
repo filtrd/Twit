@@ -9,7 +9,7 @@ $stmt->execute([$username]);
 $profile = $stmt->fetch();
 if (!$profile) { http_response_code(404); exit('User not found'); }
 
-$stmt = db()->prepare('SELECT id, content, image_path, created_at FROM posts WHERE user_id = ? ORDER BY id DESC');
+$stmt = db()->prepare('SELECT id, content, image_path, created_at, edit_count FROM posts WHERE user_id = ? ORDER BY id DESC');
 $stmt->execute([$profile['id']]);
 $posts = $stmt->fetchAll();
 
@@ -45,7 +45,7 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
     <div class="wrap">
         <div class="brand">
             <a class="logo" href="index.php"><?= e($siteName) ?></a>
-            <p class="tagline">Share short thoughts with the world.</p>
+            <p class="tagline"><?= e($tagLine) ?></p>
         </div>
         <nav>
             <a href="./">Home</a>
@@ -103,22 +103,28 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                     <div class="post-head">
                         <strong>@<?= e($profile['username']) ?></strong>
                         <time><?= e(formatPostDate($post['created_at'])) ?></time>
+                        <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
+                            <div class="post-menu">
+                                <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
+                                <div class="post-menu-dropdown" hidden>
+                                    <?php if (time() - strtotime($post['created_at']) >= 0 && time() - strtotime($post['created_at']) <= 300 && (int)$post['edit_count'] < 2): ?>
+                                        <a href="edit.php?post_id=<?= (int)$post['id'] ?>&redirect=profile">Edit</a>
+                                    <?php endif; ?>
+                                    <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
+                                        <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
+                                        <input type="hidden" name="redirect" value="profile">
+                                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                        <button type="submit">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <?php if ($post['content'] !== ''): ?>
                         <p><?= renderPostContent($post['content']) ?></p>
                     <?php endif; ?>
                     <?php if (!empty($post['image_path'])): ?>
                         <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
-                    <?php endif; ?>
-                    <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
-                        <div class="post-actions">
-                            <form class="inline" method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
-                                <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
-                                <input type="hidden" name="redirect" value="profile">
-                                <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                                <button type="submit">Delete</button>
-                            </form>
-                        </div>
                     <?php endif; ?>
                 </article>
             <?php endforeach; ?>
@@ -149,6 +155,25 @@ if (avatarButton && avatarUpload) {
         }
     });
 }
+
+document.querySelectorAll('.post-menu').forEach(menu => {
+    const button = menu.querySelector('.post-menu-button');
+    const dropdown = menu.querySelector('.post-menu-dropdown');
+
+    button.addEventListener('click', event => {
+        event.stopPropagation();
+        const open = !dropdown.hidden;
+        document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
+        document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
+        dropdown.hidden = open;
+        button.setAttribute('aria-expanded', String(!open));
+    });
+});
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
+    document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
+});
 </script>
 </body>
 </html>
