@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                     <div class="edit-post-actions">
-                        <span>Up to <?= (int)$editCount ?> edits within <?= (int)$editTime ?> minutes</span>
+                        <span>You have <?= (int)$editCount - (int)$post['edit_count'] ?> edits and <?= max(0, (int)$editTime - (int)floor($age / 60)) ?> minutes left</span>
                         <div>
                             <a href="<?= $redirect === 'profile' ? 'profile.php?u=' . urlencode($user['username']) : 'index.php' ?>">Cancel</a>
                             <button class="button" type="submit">Save</button>
