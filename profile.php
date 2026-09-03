@@ -103,15 +103,17 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                     <div class="post-head">
                         <strong>@<?= e($profile['username']) ?></strong>
                         <time><?= e(formatPostDate($post['created_at'])) ?></time>
-                        <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
+                        <?php $postAge = time() - strtotime($post['created_at']); ?>
+                        <?php $canEdit = $postAge >= 0 && $postAge <= ((int)$postEditTime * 60) && (int)$post['edit_count'] < (int)$postEditCount; ?>
+                        <?php $canDelete = $postAge >= 0 && $postAge <= ((int)$postDeleteTime * 60); ?>
+                        <?php if ($user && (int)$user['id'] === (int)$profile['id'] && ($canEdit || $canDelete)): ?>
                             <div class="post-menu">
                                 <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
                                 <div class="post-menu-dropdown" hidden>
-                                    <?php $postAge = time() - strtotime($post['created_at']); ?>
-                                    <?php if ($postAge >= 0 && $postAge <= ((int)$postEditTime * 60) && (int)$post['edit_count'] < (int)$postEditCount): ?>
+                                    <?php if ($canEdit): ?>
                                         <a href="edit.php?post_id=<?= (int)$post['id'] ?>&redirect=profile">Edit</a>
                                     <?php endif; ?>
-                                    <?php if ($postAge >= 0 && $postAge <= ((int)$postDeleteTime * 60)): ?>
+                                    <?php if ($canDelete): ?>
                                         <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
                                             <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
                                             <input type="hidden" name="redirect" value="profile">
