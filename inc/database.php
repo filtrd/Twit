@@ -42,21 +42,6 @@ CREATE TABLE IF NOT EXISTS follows (
     FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
     CHECK (follower_id != following_id)
 );
-
-CREATE TABLE IF NOT EXISTS comments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    post_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    parent_id INTEGER,
-    content TEXT NOT NULL,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS comments_post_id_idx ON comments(post_id);
-CREATE INDEX IF NOT EXISTS comments_parent_id_idx ON comments(parent_id);
 SQL);
 
 /*
@@ -176,3 +161,82 @@ if (!$hasImagePath) {
 if (!$hasEditCount) {
     $pdo->exec('ALTER TABLE posts ADD COLUMN edit_count INTEGER NOT NULL DEFAULT 0');
 }
+
+/*
+ * Add comments/replies. parent_id is self-referential so replies can form
+ * threaded conversations. Repair the table if an earlier posts migration
+ * left its post foreign key pointing at posts_old.
+ */
+$pdo->exec(<<<'SQL'
+CREATE TABLE IF NOT EXISTS comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    parent_id INTEGER,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
+);
+SQL);
+
+$commentForeignKeys = $pdo->query('PRAGMA foreign_key_list(comments)')->fetchAll();
+$commentsNeedRepair = false;
+
+foreach ($commentForeignKeys as $foreignKey) {
+    if ($foreignKey['table'] !== 'posts' && $foreignKey['table'] !== 'users' && $foreignKey['table'] !== 'comments') {
+        $commentsNeedRepair = true;
+        break;
+    }
+}
+
+if ($commentsNeedRepair) {
+    $pdo->exec('PRAGMA foreign_keys = OFF');
+
+    try {
+        $pdo->beginTransaction();
+
+        $pdo->exec('ALTER TABLE comments RENAME TO comments_old');
+
+        $pdo->exec(<<<'SQL'
+CREATE TABLE comments_new (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    parent_id INTEGER,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES comments_new(id) ON DELETE CASCADE
+);
+SQL);
+
+        $pdo->exec(<<<'SQL'
+INSERT INTO comments_new (id, post_id, user_id, parent_id, content, created_at)
+SELECT id, post_id, user_id, parent_id, content, created_at
+FROM comments_old
+SQL);
+
+        $pdo->exec('DROP TABLE comments_old');
+        $pdo->exec('ALTER TABLE comments_new RENAME TO comments');
+
+        $pdo->exec('CREATE INDEX IF NOT EXISTS comments_post_id_idx ON comments(post_id)');
+        $pdo->exec('CREATE INDEX IF NOT EXISTS comments_parent_id_idx ON comments(parent_id)');
+
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        $pdo->exec('PRAGMA foreign_keys = ON');
+        throw $e;
+    }
+
+    $pdo->exec('PRAGMA foreign_keys = ON');
+}
+
+$pdo->exec('CREATE INDEX IF NOT EXISTS comments_post_id_idx ON comments(post_id)');
+$pdo->exec('CREATE INDEX IF NOT EXISTS comments_parent_id_idx ON comments(parent_id)');
