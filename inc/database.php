@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS posts (
     content TEXT NOT NULL,
     image_path TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -94,6 +95,7 @@ CREATE TABLE posts (
     content TEXT NOT NULL,
     image_path TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 SQL);
@@ -144,6 +146,7 @@ $columns = $pdo->query('PRAGMA table_info(posts)')->fetchAll();
 
 $hasImagePath = false;
 $hasEditCount = false;
+$hasUpdatedAt = false;
 
 foreach ($columns as $column) {
     if ($column['name'] === 'image_path') {
@@ -151,6 +154,9 @@ foreach ($columns as $column) {
     }
     if ($column['name'] === 'edit_count') {
         $hasEditCount = true;
+    }
+    if ($column['name'] === 'updated_at') {
+        $hasUpdatedAt = true;
     }
 }
 
@@ -160,6 +166,10 @@ if (!$hasImagePath) {
 
 if (!$hasEditCount) {
     $pdo->exec('ALTER TABLE posts ADD COLUMN edit_count INTEGER NOT NULL DEFAULT 0');
+}
+
+if (!$hasUpdatedAt) {
+    $pdo->exec('ALTER TABLE posts ADD COLUMN updated_at TEXT');
 }
 
 /*
