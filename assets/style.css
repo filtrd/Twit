@@ -445,8 +445,20 @@ main {
     font-weight: 700;
 }
 
-.avatar-link:hover {
-    text-decoration: none;
+.avatar-upload {
+    display: block;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+}
+
+.avatar-upload:hover {
+    opacity: .8;
+}
+
+.avatar-upload .avatar {
+    width: 100%;
+    height: 100%;
 }
 
 .profile-main {
@@ -456,9 +468,7 @@ main {
 }
 
 .avatar-form {
-    display: flex;
-    gap: 16px;
-    margin-top: 16px;
+    margin: 0;
 }
 
 .edit-post {
@@ -698,13 +708,10 @@ footer .wrap {
         align-items: flex-start;
     }
 
-    .avatar-profile {
+    .avatar-profile,
+    .avatar-upload {
         width: 80px;
         height: 80px;
-    }
-
-    .avatar-form {
-        flex-wrap: wrap;
     }
 
     footer .wrap {
