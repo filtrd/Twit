@@ -91,18 +91,6 @@ function postCharacterCount(string $content): int
     return $count;
 }
 
-function shortenUrlForDisplay(string $url): string
-{
-    $display = preg_replace('~^https?://~i', '', $url);
-    $display = preg_replace('~^www\.~i', '', $display);
-
-    if (mb_strlen($display) > 42) {
-        return mb_strimwidth($display, 0, 42, '…', 'UTF-8');
-    }
-
-    return $display;
-}
-
 function renderPostContent(string $content): string
 {
     $output = '';
@@ -118,9 +106,7 @@ function renderPostContent(string $content): string
             $trimmedUrl = rtrim($url, '.,!?;:)]}');
             $trailing = substr($url, strlen($trimmedUrl));
 
-            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer" title="' . e($trimmedUrl) . '">'
-                . e(shortenUrlForDisplay($trimmedUrl))
-                . '</a>';
+            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . 'link' . '</a>';
 
             $output .= e($trailing);
             $offset = $position + strlen($url);
@@ -128,6 +114,7 @@ function renderPostContent(string $content): string
     }
 
     $output .= e(substr($content, $offset));
+
     return nl2br($output);
 }
 
