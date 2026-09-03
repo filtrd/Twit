@@ -17,7 +17,7 @@ if (!$post) {
 }
 
 $age = time() - strtotime($post['created_at']);
-$canEdit = $age >= 0 && $age <= 300 && (int)$post['edit_count'] < 2;
+$canEdit = $age >= 0 && $age <= ((int)$editTime * 60) && (int)$post['edit_count'] < (int)$editCount;
 $redirect = ($_POST['redirect'] ?? $_GET['redirect'] ?? '') === 'profile' ? 'profile' : 'index';
 $error = '';
 
@@ -31,13 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($content === '' && empty($post['image_path'])) {
             $error = 'Post cannot be empty.';
-        } elseif (postCharacterCount($content) > 280) {
+        } elseif (postCharacterCount($content) > $maxPostLength) {
             $error = 'Post is too long.';
         } else {
             $stmt = db()->prepare(
-                'UPDATE posts SET content = ?, edit_count = edit_count + 1 WHERE id = ? AND user_id = ? AND edit_count < 2'
+                'UPDATE posts SET content = ?, edit_count = edit_count + 1 WHERE id = ? AND user_id = ? AND edit_count < ?'
             );
-            $stmt->execute([$content, $postId, $user['id']]);
+            $stmt->execute([$content, $postId, $user['id'], (int)$editCount]);
 
             $target = $redirect === 'profile'
                 ? 'profile.php?u=' . urlencode($user['username'])
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" name="redirect" value="<?= e($redirect) ?>">
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                     <div class="edit-post-actions">
-                        <span>Up to 2 edits within 5 minutes</span>
+                        <span>Up to <?= (int)$editCount ?> edits within <?= (int)$editTime ?> minutes</span>
                         <div>
                             <a href="<?= $redirect === 'profile' ? 'profile.php?u=' . urlencode($user['username']) : 'index.php' ?>">Cancel</a>
                             <button class="button" type="submit">Save</button>
