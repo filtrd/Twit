@@ -144,12 +144,6 @@ function renderCommentTree(array $comments, ?int $parentId = null, int $depth = 
 function renderPost(array $post, ?array $user, string $redirect = 'index'): void
 {
     $postId = (int)$post['id'];
-    $stmt = db()->prepare('SELECT c.id, c.post_id, c.user_id, c.parent_id, c.content, c.created_at, u.username FROM comments c JOIN users u ON u.id = c.user_id WHERE c.post_id = ? ORDER BY c.id ASC');
-    $stmt->execute([$postId]);
-    $commentRows = $stmt->fetchAll();
-    $comments = [];
-    foreach ($commentRows as $comment) $comments[$comment['parent_id'] === null ? null : (int)$comment['parent_id']][] = $comment;
-    $commentError = get_flash('comment_error');
     ?>
     <article class="post" id="post-<?= $postId ?>">
         <div class="post-head">
@@ -170,14 +164,9 @@ function renderPost(array $post, ?array $user, string $redirect = 'index'): void
         <div class="post-actions">
             <span>♥ <?= (int)($post['like_count'] ?? 0) ?></span>
             <?php if ($user): ?><form class="inline" method="post" action="like.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button><?= liked_by_me($postId) ? 'Unlike' : 'Like' ?></button></form><?php endif; ?>
-            <button type="button" class="comment-toggle" data-post-id="<?= $postId ?>">Comment<?= count($commentRows) ? ' ' . count($commentRows) : '' ?></button>
+            <a class="comment-toggle" href="comments.php?post_id=<?= $postId ?>">Comment<?= !empty($post['comment_count']) ? ' ' . (int)$post['comment_count'] : '' ?></a>
             <?php if ((int)($post['edit_count'] ?? 0) > 0): ?><span class="post-edited">Edited</span><?php endif; ?>
         </div>
-        <section class="comments" data-comments="<?= $postId ?>" hidden>
-            <?php if ($commentError): ?><p class="form-error"><?= e($commentError) ?></p><?php endif; ?>
-            <?php if ($user): ?><form class="comment-form" method="post" action="comments.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><?php if ($redirect === 'profile'): ?><input type="hidden" name="redirect" value="profile"><input type="hidden" name="redirect_user" value="<?= e($post['username']) ?>"><?php endif; ?><textarea name="content" rows="2" placeholder="Write a comment..."></textarea><div class="comment-form-actions"><button class="button" type="submit">Comment</button></div></form><?php endif; ?>
-            <?php renderCommentTree($comments); ?>
-        </section>
     </article>
     <?php
 }
