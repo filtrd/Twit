@@ -19,13 +19,19 @@ if (!$post) {
 $age = time() - strtotime($post['created_at']);
 $canEdit = $age >= 0 && $age <= ((int)$postEditTime * 60) && (int)$post['edit_count'] < (int)$postEditCount;
 $redirect = ($_POST['redirect'] ?? $_GET['redirect'] ?? '') === 'profile' ? 'profile' : 'index';
+$redirectTarget = $redirect === 'profile'
+    ? 'profile.php?u=' . urlencode($user['username'])
+    : 'index.php';
 $error = '';
+$maxEditsReached = (int)$post['edit_count'] >= (int)$postEditCount;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
 
     if (!$canEdit) {
-        $error = 'This post can no longer be edited.';
+        $error = $maxEditsReached
+            ? 'Sorry, max edits reached.'
+            : 'This post can no longer be edited.';
     } else {
         $content = trim($_POST['content'] ?? '');
 
@@ -39,10 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             $stmt->execute([$content, $postId, $user['id'], (int)$postEditCount]);
 
-            $target = $redirect === 'profile'
-                ? 'profile.php?u=' . urlencode($user['username'])
-                : 'index.php';
-            header('Location: ' . $target);
+            header('Location: ' . $redirectTarget);
             exit;
         }
     }
@@ -52,6 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<?php if ($maxEditsReached): ?>
+<meta http-equiv="refresh" content="5;url=<?= e($redirectTarget) ?>">
+<?php endif; ?>
 <title>Edit post · <?= e($siteName) ?></title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -72,11 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main>
     <div class="wrap">
         <section class="edit-post">
-            <h1>Edit post</h1>
-            <?php if ($error): ?>
-                <p class="error"><?= e($error) ?></p>
-            <?php endif; ?>
             <?php if ($canEdit): ?>
+                <h1>Edit post</h1>
                 <form method="post">
                     <textarea name="content" maxlength="10000"><?= e($post['content']) ?></textarea>
                     <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
@@ -85,11 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="edit-post-actions">
                         <span>You have <?= (int)$postEditCount - (int)$post['edit_count'] ?> edits and <?= max(0, (int)$postEditTime - (int)floor($age / 60)) ?> minutes left</span>
                         <div>
-                            <a href="<?= $redirect === 'profile' ? 'profile.php?u=' . urlencode($user['username']) : 'index.php' ?>">Cancel</a>
+                            <a href="<?= e($redirectTarget) ?>">Cancel</a>
                             <button class="button" type="submit">Save</button>
                         </div>
                     </div>
                 </form>
+            <?php else: ?>
+                <p class="error"><?= e($maxEditsReached ? 'Sorry, max edits reached.' : 'This post can no longer be edited.') ?></p>
             <?php endif; ?>
         </section>
     </div>
