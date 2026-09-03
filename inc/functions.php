@@ -236,6 +236,9 @@ function renderPost(array $post, ?array $user, string $redirect = 'index'): void
                         <button><?= liked_by_me((int)$post['id']) ? 'Unlike' : 'Like' ?></button>
                     </form>
                 <?php endif; ?>
+                <?php if ((int)$post['edit_count'] > 0): ?>
+                    <span class="post-edited">Edited</span>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </article>
