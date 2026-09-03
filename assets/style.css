@@ -303,7 +303,8 @@ main {
 }
 
 .post-link {
-    color: red;
+    color: purple;
+    font-weight: 700;
     overflow-wrap: anywhere;
 }
 
