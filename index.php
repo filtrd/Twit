@@ -144,9 +144,32 @@ const selectedImage = document.getElementById('selected-image');
 const emojiButton = document.getElementById('emoji-button');
 const emojiPicker = document.getElementById('emoji-picker');
 
+function postCharacterCount(value) {
+    let count = 0;
+    let lastIndex = 0;
+    const urlPattern = /https?:\/\/[^\s<]+/gi;
+    let match;
+
+    while ((match = urlPattern.exec(value)) !== null) {
+        count += Array.from(value.slice(lastIndex, match.index)).length;
+
+        const url = match[0];
+        const trailingMatch = url.match(/[.,!?;:)\]}]+$/);
+        const trailing = trailingMatch ? trailingMatch[0] : '';
+
+        count += 23;
+        count += Array.from(trailing).length;
+
+        lastIndex = match.index + url.length;
+    }
+
+    count += Array.from(value.slice(lastIndex)).length;
+    return count;
+}
+
 function updateCounter() {
     if (textarea && counter) {
-        counter.textContent = textarea.value.length + '/<?= (int)$maxPostLength ?>';
+        counter.textContent = postCharacterCount(textarea.value) + '/<?= (int)$maxPostLength ?>';
     }
 }
 
