@@ -77,17 +77,18 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
                 <?php elseif (!empty($profile['avatar_path'])): ?><img class="avatar avatar-profile" src="<?= e($profile['avatar_path']) ?>" alt="">
                 <?php else: ?><span class="avatar avatar-profile avatar-fallback"><?= e(strtoupper(substr($profile['username'], 0, 1))) ?></span><?php endif; ?>
                 <div>
-                    <h1>@<?= e($profile['username']) ?></h1>
+                    <div class="profile-name">
+                        <h1>@<?= e($profile['username']) ?></h1>
+                        <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
+                            <form class="follow-form" method="post" action="follow.php"><input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button"><?= $isFollowing ? 'Unfollow' : 'Follow' ?></button></form>
+                        <?php endif; ?>
+                    </div>
                     <p>Joined <?= date('M Y', strtotime($profile['created_at'])) ?></p>
                     <p><?= $postCount ?> Posts &middot; <?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
                 </div>
             </div>
 
             <?php if ($avatarError): ?><p class="error"><?= e($avatarError) ?></p><?php endif; ?>
-
-            <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
-                <form method="post" action="follow.php"><input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button"><?= $isFollowing ? 'Unfollow' : 'Follow' ?></button></form>
-            <?php endif; ?>
         </section>
 
         <section class="feed">
