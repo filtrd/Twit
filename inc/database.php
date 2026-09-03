@@ -42,6 +42,21 @@ CREATE TABLE IF NOT EXISTS follows (
     FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
     CHECK (follower_id != following_id)
 );
+
+CREATE TABLE IF NOT EXISTS comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    parent_id INTEGER,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS comments_post_id_idx ON comments(post_id);
+CREATE INDEX IF NOT EXISTS comments_parent_id_idx ON comments(parent_id);
 SQL);
 
 /*
