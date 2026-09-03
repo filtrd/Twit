@@ -302,6 +302,10 @@ main {
     display: inline;
 }
 
+.post-link {
+    overflow-wrap: anywhere;
+}
+
 .auth {
     width: min(420px, calc(100% - 40px));
     margin: 80px auto;
