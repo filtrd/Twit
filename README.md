@@ -11,6 +11,7 @@ A minimal old-school microblogging social network written in plain PHP with SQLi
 - URLs count as 23 characters toward the post limit
 - Public timeline
 - Like / unlike posts
+- Delete your own posts
 - User profiles and following
 - CSRF protection and password hashing
 - JPEG, PNG and WebP image uploads converted to WebP
@@ -32,6 +33,7 @@ microblog/
 ├── profile.php
 ├── logout.php
 ├── post.php
+├── delete.php
 ├── like.php
 ├── follow.php
 ├── avatar.php
@@ -50,7 +52,9 @@ microblog/
 │
 ├── uploads/
 │   ├── .gitignore
-│   └── avatars/
+│   ├── avatars/
+│   │   └── .gitignore
+│   └── posts/
 │       └── .gitignore
 │
 ├── README.md
@@ -62,7 +66,9 @@ microblog/
 - `inc/` contains internal configuration, helper functions, and database code.
 - `data/` contains the local SQLite database and is ignored by Git.
 - `uploads/` contains uploaded images and is ignored by Git.
-- Avatars are cropped square, resized to 150×150, converted to WebP, and stored as relative paths in the users table.
+- Post images are converted to WebP and stored under `uploads/posts/`.
+- Avatars are cropped square, resized to 150×150, converted to WebP, and stored under `uploads/avatars/`.
+- Users can delete their own posts; deletion checks ownership server-side before removing the post and its uploaded image.
 
 ## Run locally
 
