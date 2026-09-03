@@ -486,7 +486,8 @@ main {
 .follow-form .button {
     color: #666;
     font-family: "IBM Plex Mono", monospace;
-    font-size: 10px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .follow-form .button:hover {
