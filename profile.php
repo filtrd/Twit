@@ -53,13 +53,9 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
             <a href="./">Home</a>
             <?php if ($user): ?>
                 <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
-                <form class="inline" method="post" action="logout.php">
-                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                    <button>Log out</button>
-                </form>
+                <form class="inline" method="post" action="logout.php"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button>Log out</button></form>
             <?php else: ?>
-                <a href="login.php">Log in</a>
-                <a class="button" href="register.php">Sign up</a>
+                <a href="login.php">Log in</a><a class="button" href="register.php">Sign up</a>
             <?php endif; ?>
         </nav>
     </div>
@@ -69,11 +65,8 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
     <div class="wrap">
         <section class="profile">
             <div class="profile-main">
-                <?php if (!empty($profile['avatar_path'])): ?>
-                    <img class="avatar avatar-profile" src="<?= e($profile['avatar_path']) ?>" alt="">
-                <?php else: ?>
-                    <span class="avatar avatar-profile avatar-fallback"><?= e(strtoupper(substr($profile['username'], 0, 1))) ?></span>
-                <?php endif; ?>
+                <?php if (!empty($profile['avatar_path'])): ?><img class="avatar avatar-profile" src="<?= e($profile['avatar_path']) ?>" alt="">
+                <?php else: ?><span class="avatar avatar-profile avatar-fallback"><?= e(strtoupper(substr($profile['username'], 0, 1))) ?></span><?php endif; ?>
                 <div>
                     <h1>@<?= e($profile['username']) ?></h1>
                     <p>Joined <?= date('M Y', strtotime($profile['created_at'])) ?></p>
@@ -81,25 +74,17 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
                 </div>
             </div>
 
-            <?php if ($avatarError): ?>
-                <p class="error"><?= e($avatarError) ?></p>
-            <?php endif; ?>
+            <?php if ($avatarError): ?><p class="error"><?= e($avatarError) ?></p><?php endif; ?>
 
             <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
                 <form class="avatar-form" method="post" action="avatar.php" enctype="multipart/form-data">
                     <input type="file" id="avatar-upload" name="avatar" accept="image/jpeg,image/png,image/webp" hidden>
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                     <button type="button" class="button" id="avatar-button"><?= !empty($profile['avatar_path']) ? 'Change avatar' : 'Upload avatar' ?></button>
-                    <?php if (!empty($profile['avatar_path'])): ?>
-                        <button type="submit" class="button" name="remove" value="1">Remove avatar</button>
-                    <?php endif; ?>
+                    <?php if (!empty($profile['avatar_path'])): ?><button type="submit" class="button" name="remove" value="1">Remove avatar</button><?php endif; ?>
                 </form>
             <?php elseif ($user): ?>
-                <form method="post" action="follow.php">
-                    <input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>">
-                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                    <button class="button"><?= $isFollowing ? 'Unfollow' : 'Follow' ?></button>
-                </form>
+                <form method="post" action="follow.php"><input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button"><?= $isFollowing ? 'Unfollow' : 'Follow' ?></button></form>
             <?php endif; ?>
         </section>
 
@@ -107,38 +92,26 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
             <?php foreach ($posts as $post): ?>
                 <?php renderPost($post, $user, 'profile'); ?>
             <?php endforeach; ?>
-
-            <?php if (!$posts): ?>
-                <p class="empty">No posts yet.</p>
-            <?php endif; ?>
+            <?php if (!$posts): ?><p class="empty">No posts yet.</p><?php endif; ?>
         </section>
     </div>
 </main>
 
 <footer>
-    <div class="wrap">
-        <span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span>
-        <nav><a href="#">About</a><a href="#">Privacy</a><a href="#">Terms</a></nav>
-    </div>
+    <div class="wrap"><span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span><nav><a href="#">About</a><a href="#">Privacy</a><a href="#">Terms</a></nav></div>
 </footer>
 
 <script>
 const avatarButton = document.getElementById('avatar-button');
 const avatarUpload = document.getElementById('avatar-upload');
-
 if (avatarButton && avatarUpload) {
     avatarButton.addEventListener('click', () => avatarUpload.click());
-    avatarUpload.addEventListener('change', () => {
-        if (avatarUpload.files.length) {
-            avatarUpload.closest('form').submit();
-        }
-    });
+    avatarUpload.addEventListener('change', () => { if (avatarUpload.files.length) avatarUpload.closest('form').submit(); });
 }
 
 document.querySelectorAll('.post-menu').forEach(menu => {
     const button = menu.querySelector('.post-menu-button');
     const dropdown = menu.querySelector('.post-menu-dropdown');
-
     button.addEventListener('click', event => {
         event.stopPropagation();
         const open = !dropdown.hidden;
@@ -148,6 +121,32 @@ document.querySelectorAll('.post-menu').forEach(menu => {
         button.setAttribute('aria-expanded', String(!open));
     });
 });
+
+document.querySelectorAll('.comment-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+        const comments = document.querySelector('[data-comments="' + button.dataset.postId + '"]');
+        if (comments) comments.hidden = !comments.hidden;
+    });
+});
+
+document.querySelectorAll('.comment-reply-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const form = document.querySelector('[data-reply-form="' + button.dataset.commentId + '"]');
+        if (form) { form.hidden = !form.hidden; if (!form.hidden) form.querySelector('textarea').focus(); }
+    });
+});
+
+document.querySelectorAll('.comment-cancel-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const form = document.querySelector('[data-reply-form="' + button.dataset.commentId + '"]');
+        if (form) form.hidden = true;
+    });
+});
+
+if (window.location.hash.startsWith('#post-')) {
+    const post = document.querySelector(window.location.hash);
+    if (post) { const comments = post.querySelector('.comments'); if (comments) comments.hidden = false; }
+}
 
 document.addEventListener('click', () => {
     document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
