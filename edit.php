@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Post is too long.';
         } else {
             $stmt = db()->prepare(
-                'UPDATE posts SET content = ?, edit_count = edit_count + 1 WHERE id = ? AND user_id = ? AND edit_count < ?'
+                'UPDATE posts SET content = ?, updated_at = CURRENT_TIMESTAMP, edit_count = edit_count + 1 WHERE id = ? AND user_id = ? AND edit_count < ?'
             );
             $stmt->execute([$content, $postId, $user['id'], (int)$postEditCount]);
 
