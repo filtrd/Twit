@@ -91,6 +91,7 @@ function postCharacterCount(string $content): int
     return $count;
 }
 
+
 function renderPostContent(string $content): string
 {
     $output = '';
@@ -107,20 +108,26 @@ function renderPostContent(string $content): string
             $trailing = substr($url, strlen($trimmedUrl));
 
             $parsed = parse_url($trimmedUrl);
-            $display = $parsed['host'] ?? $trimmedUrl;
-            $display = preg_replace('~^www\.~i', '', $display);
+            $host = $parsed['host'] ?? $trimmedUrl;
+            $host = preg_replace('~^www\.~i', '', $host);
 
-            $hasMore = (!empty($parsed['path']) && $parsed['path'] !== '/')
-                || !empty($parsed['query'])
-                || !empty($parsed['fragment']);
+            $path = $parsed['path'] ?? '';
+            $path = trim($path, '/');
+            $segments = $path === '' ? [] : explode('/', $path);
 
-            if ($hasMore) {
+            $display = $host;
+
+            if (!empty($segments)) {
+                $display .= '/' . $segments[0];
+
+                if (count($segments) > 1) {
+                    $display .= '…';
+                }
+            } elseif (!empty($parsed['query']) || !empty($parsed['fragment'])) {
                 $display .= '…';
             }
 
-            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">'
-                . e($display)
-                . '</a>';
+            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . e($display) . '</a>';
 
             $output .= e($trailing);
             $offset = $position + strlen($url);
@@ -131,6 +138,7 @@ function renderPostContent(string $content): string
 
     return nl2br($output);
 }
+
 
 function formatPostDate(string $date): string
 {
