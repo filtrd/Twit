@@ -55,7 +55,7 @@ function liked_by_me(int $postId): bool {
 
         <?php if ($user): ?>
             <form class="composer" method="post" action="post.php" enctype="multipart/form-data">
-                <textarea name="content" maxlength="<?= (int)$maxPostLength ?>" placeholder="What's happening?"></textarea>
+                <textarea name="content" placeholder="What's happening?"></textarea>
                 <input type="file" id="image-upload" name="image" accept="image/jpeg,image/png,image/webp" hidden>
 
                 <div class="composer-tools">
@@ -99,7 +99,7 @@ function liked_by_me(int $postId): bool {
                         <time><?= e(formatPostDate($post['created_at'])) ?></time>
                     </div>
                     <?php if ($post['content'] !== ''): ?>
-                        <p><?= nl2br(e($post['content'])) ?></p>
+                        <p><?= renderPostContent($post['content']) ?></p>
                     <?php endif; ?>
                     <?php if (!empty($post['image_path'])): ?>
                         <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
