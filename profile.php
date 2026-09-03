@@ -4,7 +4,7 @@ require_once __DIR__ . '/inc/database.php';
 require_once __DIR__ . '/inc/config.php';
 
 $username = trim($_GET['u'] ?? '');
-$stmt = db()->prepare('SELECT id, username, created_at FROM users WHERE username = ?');
+$stmt = db()->prepare('SELECT id, username, avatar_path, created_at FROM users WHERE username = ?');
 $stmt->execute([$username]);
 $profile = $stmt->fetch();
 if (!$profile) { http_response_code(404); exit('User not found'); }
@@ -63,10 +63,29 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
 <main>
     <div class="wrap">
         <section class="profile">
-            <h1>@<?= e($profile['username']) ?></h1>
-            <p>Joined <?= date('M Y', strtotime($profile['created_at'])) ?></p>
-            <p><?= $postCount ?> Posts &middot; <?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
-            <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
+            <div class="profile-main">
+                <?php if (!empty($profile['avatar_path'])): ?>
+                    <img class="avatar avatar-profile" src="<?= e($profile['avatar_path']) ?>" alt="">
+                <?php else: ?>
+                    <span class="avatar avatar-profile avatar-fallback"><?= e(strtoupper(substr($profile['username'], 0, 1))) ?></span>
+                <?php endif; ?>
+                <div>
+                    <h1>@<?= e($profile['username']) ?></h1>
+                    <p>Joined <?= date('M Y', strtotime($profile['created_at'])) ?></p>
+                    <p><?= $postCount ?> Posts &middot; <?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
+                </div>
+            </div>
+
+            <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
+                <form class="avatar-form" method="post" action="avatar.php" enctype="multipart/form-data">
+                    <input type="file" id="avatar-upload" name="avatar" accept="image/jpeg,image/png,image/webp" hidden>
+                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                    <button type="button" class="button" id="avatar-button"><?= !empty($profile['avatar_path']) ? 'Change avatar' : 'Upload avatar' ?></button>
+                    <?php if (!empty($profile['avatar_path'])): ?>
+                        <button type="submit" class="button" name="remove" value="1">Remove avatar</button>
+                    <?php endif; ?>
+                </form>
+            <?php elseif ($user): ?>
                 <form method="post" action="follow.php">
                     <input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>">
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
@@ -83,7 +102,7 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
                         <time><?= e(formatPostDate($post['created_at'])) ?></time>
                     </div>
                     <?php if ($post['content'] !== ''): ?>
-                        <p><?= nl2br(e($post['content'])) ?></p>
+                        <p><?= renderPostContent($post['content']) ?></p>
                     <?php endif; ?>
                     <?php if (!empty($post['image_path'])): ?>
                         <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
@@ -101,12 +120,22 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
 <footer>
     <div class="wrap">
         <span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span>
-        <nav>
-            <a href="#">About</a>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-        </nav>
+        <nav><a href="#">About</a><a href="#">Privacy</a><a href="#">Terms</a></nav>
     </div>
 </footer>
+
+<script>
+const avatarButton = document.getElementById('avatar-button');
+const avatarUpload = document.getElementById('avatar-upload');
+
+if (avatarButton && avatarUpload) {
+    avatarButton.addEventListener('click', () => avatarUpload.click());
+    avatarUpload.addEventListener('change', () => {
+        if (avatarUpload.files.length) {
+            avatarUpload.closest('form').submit();
+        }
+    });
+}
+</script>
 </body>
 </html>
