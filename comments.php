@@ -132,7 +132,7 @@ $commentError = get_flash('comment_error');
             <?php endif; ?>
 
             <?php if ($commentRows): ?>
-                <?php renderCommentTree($comments); ?>
+                <?php renderCommentTree($comments, null, 0, $fromProfile ? 'profile' : '', $profileUsername); ?>
             <?php else: ?>
                 <p class="empty">No comments yet.</p>
             <?php endif; ?>
