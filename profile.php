@@ -43,7 +43,10 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
 <body>
 <header class="topbar">
     <div class="wrap">
-        <a class="logo" href="index.php"><?= e($siteName) ?></a>
+        <div class="brand">
+            <a class="logo" href="index.php"><?= e($siteName) ?></a>
+            <p class="tagline">Share short thoughts with the world.</p>
+        </div>
         <nav>
             <a href="./">Home</a>
             <?php if ($user): ?>
