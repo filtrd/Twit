@@ -260,7 +260,7 @@ main {
 .post-head {
     display: flex;
     gap: 10px;
-    align-items: baseline;
+    align-items: center;
 }
 
 .post-head strong {
@@ -270,6 +270,12 @@ main {
 .post-head time {
     color: #888;
     font-size: 10px;
+}
+
+.post-author {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
 }
 
 .post p {
@@ -306,6 +312,50 @@ main {
     color: purple;
     font-weight: 700;
     overflow-wrap: anywhere;
+}
+
+.avatar {
+    width: 150px;
+    height: 150px;
+    flex: 0 0 auto;
+    object-fit: cover;
+}
+
+.avatar-small {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-profile {
+    width: 100px;
+    height: 100px;
+}
+
+.avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eee;
+    color: #555;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.avatar-link:hover {
+    text-decoration: none;
+}
+
+.profile-main {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.avatar-form {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
 }
 
 .auth {
@@ -400,9 +450,9 @@ footer .wrap {
 }
 
 @media (max-width: 600px) {
-.wrap {
-    width: min(100% - 24px, 640px);
-}
+    .wrap {
+        width: min(100% - 24px, 640px);
+    }
 
     main {
         padding-top: 36px;
@@ -414,6 +464,19 @@ footer .wrap {
 
     .hero h1 {
         font-size: 14px;
+    }
+
+    .profile-main {
+        align-items: flex-start;
+    }
+
+    .avatar-profile {
+        width: 80px;
+        height: 80px;
+    }
+
+    .avatar-form {
+        flex-wrap: wrap;
     }
 
     footer .wrap {
