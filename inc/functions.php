@@ -144,6 +144,10 @@ function renderCommentTree(array $comments, ?int $parentId = null, int $depth = 
 function renderPost(array $post, ?array $user, string $redirect = 'index'): void
 {
     $postId = (int)$post['id'];
+    $commentUrl = 'comments.php?post_id=' . $postId;
+    if ($redirect === 'profile') {
+        $commentUrl .= '&from=profile&u=' . urlencode($post['username']);
+    }
     ?>
     <article class="post" id="post-<?= $postId ?>">
         <div class="post-head">
@@ -164,7 +168,7 @@ function renderPost(array $post, ?array $user, string $redirect = 'index'): void
         <div class="post-actions">
             <span>♥ <?= (int)($post['like_count'] ?? 0) ?></span>
             <?php if ($user): ?><form class="inline" method="post" action="like.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button><?= liked_by_me($postId) ? 'Unlike' : 'Like' ?></button></form><?php endif; ?>
-            <a class="comment-toggle" href="comments.php?post_id=<?= $postId ?>">Comment<?= !empty($post['comment_count']) ? ' ' . (int)$post['comment_count'] : '' ?></a>
+            <a class="comment-toggle" href="<?= e($commentUrl) ?>">Comment<?= !empty($post['comment_count']) ? ' ' . (int)$post['comment_count'] : '' ?></a>
             <?php if ((int)($post['edit_count'] ?? 0) > 0): ?><span class="post-edited">Edited</span><?php endif; ?>
         </div>
     </article>
