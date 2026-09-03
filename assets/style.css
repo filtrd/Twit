@@ -471,6 +471,29 @@ main {
     margin: 0;
 }
 
+.profile-name {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.follow-form {
+    display: inline-flex;
+    align-items: baseline;
+    margin: 0;
+}
+
+.follow-form .button {
+    color: #666;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+}
+
+.follow-form .button:hover {
+    color: #111;
+    opacity: 1;
+}
+
 .edit-post {
     padding: 24px 0;
 }
