@@ -65,7 +65,16 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
     <div class="wrap">
         <section class="profile">
             <div class="profile-main">
-                <?php if (!empty($profile['avatar_path'])): ?><img class="avatar avatar-profile" src="<?= e($profile['avatar_path']) ?>" alt="">
+                <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
+                    <form class="avatar-form" method="post" action="avatar.php" enctype="multipart/form-data">
+                        <label class="avatar-upload" for="avatar-upload">
+                            <?php if (!empty($profile['avatar_path'])): ?><img class="avatar avatar-profile" src="<?= e($profile['avatar_path']) ?>" alt="">
+                            <?php else: ?><span class="avatar avatar-profile avatar-fallback"><?= e(strtoupper(substr($profile['username'], 0, 1))) ?></span><?php endif; ?>
+                        </label>
+                        <input type="file" id="avatar-upload" name="avatar" accept="image/jpeg,image/png,image/webp" hidden>
+                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                    </form>
+                <?php elseif (!empty($profile['avatar_path'])): ?><img class="avatar avatar-profile" src="<?= e($profile['avatar_path']) ?>" alt="">
                 <?php else: ?><span class="avatar avatar-profile avatar-fallback"><?= e(strtoupper(substr($profile['username'], 0, 1))) ?></span><?php endif; ?>
                 <div>
                     <h1>@<?= e($profile['username']) ?></h1>
@@ -76,14 +85,7 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
 
             <?php if ($avatarError): ?><p class="error"><?= e($avatarError) ?></p><?php endif; ?>
 
-            <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?>
-                <form class="avatar-form" method="post" action="avatar.php" enctype="multipart/form-data">
-                    <input type="file" id="avatar-upload" name="avatar" accept="image/jpeg,image/png,image/webp" hidden>
-                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                    <button type="button" class="button" id="avatar-button"><?= !empty($profile['avatar_path']) ? 'Change avatar' : 'Upload avatar' ?></button>
-                    <?php if (!empty($profile['avatar_path'])): ?><button type="submit" class="button" name="remove" value="1">Remove avatar</button><?php endif; ?>
-                </form>
-            <?php elseif ($user): ?>
+            <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
                 <form method="post" action="follow.php"><input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button"><?= $isFollowing ? 'Unfollow' : 'Follow' ?></button></form>
             <?php endif; ?>
         </section>
@@ -102,10 +104,8 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
 </footer>
 
 <script>
-const avatarButton = document.getElementById('avatar-button');
 const avatarUpload = document.getElementById('avatar-upload');
-if (avatarButton && avatarUpload) {
-    avatarButton.addEventListener('click', () => avatarUpload.click());
+if (avatarUpload) {
     avatarUpload.addEventListener('change', () => { if (avatarUpload.files.length) avatarUpload.closest('form').submit(); });
 }
 
