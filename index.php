@@ -129,36 +129,20 @@ function postCharacterCount(value) {
 }
 
 function updateCounter() {
-    if (textarea && counter) {
-        counter.textContent = postCharacterCount(textarea.value) + '/' + maxPostLength;
-    }
+    if (textarea && counter) counter.textContent = postCharacterCount(textarea.value) + '/' + maxPostLength;
 }
 
 function enforcePostLength() {
-    if (!textarea) {
-        return;
-    }
-
+    if (!textarea) return;
     const characters = Array.from(textarea.value);
-
-    if (postCharacterCount(textarea.value) <= maxPostLength) {
-        return;
-    }
-
-    let low = 0;
-    let high = characters.length;
-
+    if (postCharacterCount(textarea.value) <= maxPostLength) return;
+    let low = 0, high = characters.length;
     while (low < high) {
         const mid = Math.ceil((low + high) / 2);
         const candidate = characters.slice(0, mid).join('');
-
-        if (postCharacterCount(candidate) <= maxPostLength) {
-            low = mid;
-        } else {
-            high = mid - 1;
-        }
+        if (postCharacterCount(candidate) <= maxPostLength) low = mid;
+        else high = mid - 1;
     }
-
     const cursor = textarea.selectionStart;
     textarea.value = characters.slice(0, low).join('');
     const newCursor = Math.min(cursor, textarea.value.length);
@@ -168,18 +152,13 @@ function enforcePostLength() {
 }
 
 if (textarea && counter) {
-    textarea.addEventListener('input', () => {
-        enforcePostLength();
-        updateCounter();
-    });
+    textarea.addEventListener('input', () => { enforcePostLength(); updateCounter(); });
     updateCounter();
 }
 
 if (imageButton && imageUpload) {
     imageButton.addEventListener('click', () => imageUpload.click());
-    imageUpload.addEventListener('change', () => {
-        selectedImage.textContent = imageUpload.files.length ? imageUpload.files[0].name : '';
-    });
+    imageUpload.addEventListener('change', () => { selectedImage.textContent = imageUpload.files.length ? imageUpload.files[0].name : ''; });
 }
 
 if (emojiButton && emojiPicker) {
@@ -202,7 +181,6 @@ if (emojiButton && emojiPicker) {
 document.querySelectorAll('.post-menu').forEach(menu => {
     const button = menu.querySelector('.post-menu-button');
     const dropdown = menu.querySelector('.post-menu-dropdown');
-
     button.addEventListener('click', event => {
         event.stopPropagation();
         const open = !dropdown.hidden;
@@ -212,6 +190,38 @@ document.querySelectorAll('.post-menu').forEach(menu => {
         button.setAttribute('aria-expanded', String(!open));
     });
 });
+
+document.querySelectorAll('.comment-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+        const comments = document.querySelector('[data-comments="' + button.dataset.postId + '"]');
+        if (comments) comments.hidden = !comments.hidden;
+    });
+});
+
+document.querySelectorAll('.comment-reply-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const form = document.querySelector('[data-reply-form="' + button.dataset.commentId + '"]');
+        if (form) {
+            form.hidden = !form.hidden;
+            if (!form.hidden) form.querySelector('textarea').focus();
+        }
+    });
+});
+
+document.querySelectorAll('.comment-cancel-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const form = document.querySelector('[data-reply-form="' + button.dataset.commentId + '"]');
+        if (form) form.hidden = true;
+    });
+});
+
+if (window.location.hash.startsWith('#post-')) {
+    const post = document.querySelector(window.location.hash);
+    if (post) {
+        const comments = post.querySelector('.comments');
+        if (comments) comments.hidden = false;
+    }
+}
 
 document.addEventListener('click', () => {
     document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
