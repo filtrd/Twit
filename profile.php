@@ -9,7 +9,7 @@ $stmt->execute([$username]);
 $profile = $stmt->fetch();
 if (!$profile) { http_response_code(404); exit('User not found'); }
 
-$stmt = db()->prepare('SELECT id, content, image_path, created_at, edit_count FROM posts WHERE user_id = ? ORDER BY id DESC');
+$stmt = db()->prepare('SELECT p.id, p.content, p.image_path, p.created_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path, (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count FROM posts p JOIN users u ON u.id = p.user_id WHERE p.user_id = ? ORDER BY p.id DESC');
 $stmt->execute([$profile['id']]);
 $posts = $stmt->fetchAll();
 
@@ -99,39 +99,7 @@ if ($user && (int)$user['id'] !== (int)$profile['id']) {
 
         <section class="feed">
             <?php foreach ($posts as $post): ?>
-                <article class="post">
-                    <div class="post-head">
-                        <strong>@<?= e($profile['username']) ?></strong>
-                        <time><?= e(formatPostDate($post['created_at'])) ?></time>
-                        <?php $postAge = time() - strtotime($post['created_at']); ?>
-                        <?php $canEdit = $postAge >= 0 && $postAge <= ((int)$postEditTime * 60) && (int)$post['edit_count'] < (int)$postEditCount; ?>
-                        <?php $canDelete = $postAge >= 0 && $postAge <= ((int)$postDeleteTime * 60); ?>
-                        <?php if ($user && (int)$user['id'] === (int)$profile['id'] && ($canEdit || $canDelete)): ?>
-                            <div class="post-menu">
-                                <button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button>
-                                <div class="post-menu-dropdown" hidden>
-                                    <?php if ($canEdit): ?>
-                                        <a href="edit.php?post_id=<?= (int)$post['id'] ?>&redirect=profile">Edit</a>
-                                    <?php endif; ?>
-                                    <?php if ($canDelete): ?>
-                                        <form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');">
-                                            <input type="hidden" name="post_id" value="<?= (int)$post['id'] ?>">
-                                            <input type="hidden" name="redirect" value="profile">
-                                            <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                                            <button type="submit">Delete</button>
-                                        </form>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                    <?php if ($post['content'] !== ''): ?>
-                        <p><?= renderPostContent($post['content']) ?></p>
-                    <?php endif; ?>
-                    <?php if (!empty($post['image_path'])): ?>
-                        <img class="post-image" src="<?= e($post['image_path']) ?>" alt="">
-                    <?php endif; ?>
-                </article>
+                <?php renderPost($post, $user, 'profile'); ?>
             <?php endforeach; ?>
 
             <?php if (!$posts): ?>
