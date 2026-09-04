@@ -12,7 +12,7 @@ SELECT p.id, p.content, p.image_path, p.created_at, p.updated_at, p.edit_count, 
        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
 FROM posts p
 JOIN users u ON u.id = p.user_id
-ORDER BY p.id DESC
+ORDER BY p.created_at DESC, p.id DESC
 SQL);
 $posts = $stmt->fetchAll();
 ?>
