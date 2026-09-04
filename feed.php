@@ -64,9 +64,10 @@ if ($hasMore && $posts) {
     $nextCursor = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
 }
 
+$user = current_user();
 ob_start();
 foreach ($posts as $post) {
-    renderPost($post, current_user());
+    renderPost($post, $user);
 }
 $html = ob_get_clean();
 
