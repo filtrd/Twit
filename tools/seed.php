@@ -328,6 +328,40 @@ try {
 
     shuffle($posts);
 
+    // Give each seeded user a join date shortly before their first post.
+    // This keeps profile history consistent while still making the dates varied.
+    $userFirstPostTimestamps = [];
+    foreach ($posts as $post) {
+        $userId = $post['user_id'];
+        if (!isset($userFirstPostTimestamps[$userId]) || $post['created_timestamp'] < $userFirstPostTimestamps[$userId]) {
+            $userFirstPostTimestamps[$userId] = $post['created_timestamp'];
+        }
+    }
+
+    $updateUserCreatedAt = $pdo->prepare('UPDATE users SET created_at = ? WHERE id = ?');
+    foreach ($userIds as $userId) {
+        $firstPostTimestamp = $userFirstPostTimestamps[$userId];
+
+        // Keep the join date at least one day before the first post, but never
+        // earlier than the seeded post range start.
+        $earliestJoinTimestamp = $startTimestamp;
+        $latestJoinTimestamp = $firstPostTimestamp - 86400;
+
+        if ($latestJoinTimestamp >= $earliestJoinTimestamp) {
+            $joinTimestamp = random_int($earliestJoinTimestamp, $latestJoinTimestamp);
+        } else {
+            // If a user's first post falls on the first day of the range,
+            // use that first-post timestamp rather than creating an impossible
+            // date outside the seeded range.
+            $joinTimestamp = $firstPostTimestamp;
+        }
+
+        $updateUserCreatedAt->execute([
+            gmdate('Y-m-d H:i:s', $joinTimestamp),
+            $userId,
+        ]);
+    }
+
     $postIds = [];
     $postOwners = [];
     $postTimestamps = [];
