@@ -19,12 +19,12 @@ if (!function_exists('imagecreatetruecolor') || !function_exists('imagewebp')) {
 
 $users = [
     ['admin', 'pass'],
-    ['alice', 'sunnydays'],
-    ['ben', 'mountains'],
-    ['clara', 'booklover'],
-    ['daniel', 'weekendcook'],
-    ['emma', 'gardenlife'],
-    ['frank', 'vinylfan'],
+    ['Enigma', 'sunnydays'],
+    ['NebulaNinja', 'mountains'],
+    ['paperbound', 'booklover'],
+    ['Pulse', 'weekendcook'],
+    ['Hornpub', 'gardenlife'],
+    ['LagSpawn', 'vinylfan'],
 ];
 
 $topics = [
