@@ -141,8 +141,7 @@ dialog p {
 .dialog-actions {
     display: flex;
     justify-content: center;
-    gap: 26px;
-}
+    column-gap: 24px;}
 
 .dialog-actions button {
     font-size: 10px;
