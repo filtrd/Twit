@@ -131,12 +131,12 @@ $topics = [
 
 $userTopics = [
     'admin' => ['music', 'walking', 'home'],
-    'alice' => ['garden', 'cafe', 'sunset'],
-    'ben' => ['walking', 'food', 'films'],
-    'clara' => ['books', 'cafe', 'home'],
-    'daniel' => ['cooking', 'breakfast', 'food'],
-    'emma' => ['garden', 'breakfast', 'walking'],
-    'frank' => ['music', 'films', 'cafe'],
+    'paperbound' => ['garden', 'cafe', 'sunset'],
+    'NebulaNinja' => ['walking', 'food', 'films'],
+    'Pulse' => ['books', 'cafe', 'home'],
+    'Hornpub' => ['cooking', 'breakfast', 'food'],
+    'LagSpawn' => ['garden', 'breakfast', 'walking'],
+    'Enigma' => ['music', 'films', 'cafe'],
 ];
 
 $avatarPalettes = [
