@@ -13,6 +13,10 @@ if ((int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn() > 0) {
     exit("Database is not empty. Delete data/microblog.sqlite and run the seeder again for a fresh dataset.\n");
 }
 
+if (!function_exists('imagecreatetruecolor') || !function_exists('imagewebp')) {
+    exit("This seeder requires the PHP GD extension with WebP support.\n");
+}
+
 $users = [
     ['admin', 'pass'],
     ['alice', 'sunnydays'],
@@ -23,129 +27,225 @@ $users = [
     ['frank', 'vinylfan'],
 ];
 
-$postSubjects = [
-    'The best breakfast I have had in ages',
-    'A quiet walk before the rain arrived',
-    'Finally finished that novel',
-    'The little café around the corner',
-    'Trying a new recipe tonight',
-    'An unexpectedly beautiful sunset',
-    'The joy of finding an old record',
-    'A very productive afternoon in the garden',
-    'Three films I would happily watch again',
-    'A train journey with a great view',
-    'Fresh bread straight from the oven',
-    'The first signs of spring',
-    'A rainy afternoon and a good cup of tea',
-    'Found a brilliant little bookshop today',
-    'The perfect Sunday lunch',
-    'Listening to music while cooking',
-    'A surprisingly warm February afternoon',
-    'The market was especially good today',
-    'A long walk along the river',
-    'Trying to grow something from seed',
-    'A favourite song I had forgotten about',
-    'Homemade soup weather',
-    'A lovely afternoon with friends',
-    'The view from the top of the hill',
-    'Rediscovered an old favourite film',
-    'Coffee and cake on a cold morning',
-    'The garden is slowly waking up',
-    'A very satisfying loaf of bread',
-    'A peaceful evening at home',
-    'The best thing about taking the scenic route',
-    'A small win today',
-    'The smell of rain after a sunny morning',
-    'Found a new favourite walking route',
-    'Making plans for the warmer months',
-    'A simple dinner that turned out perfectly',
-    'The kind of afternoon that makes you slow down',
-    'A good book makes time disappear',
-    'The clouds looked incredible this evening',
-    'A weekend well spent',
-    'Trying something I have never cooked before',
-    'A favourite corner of the local park',
-    'Nothing beats a slow morning',
-    'A song that instantly takes me somewhere else',
-    'A beautiful view on the way home',
-    'The pleasure of a completely unplanned afternoon',
-    'A new plant for the windowsill',
-    'A surprisingly good homemade pizza',
-    'The first daffodils are out',
-    'A chilly morning followed by sunshine',
-    'Found some great second-hand books',
-    'A perfect evening for a film',
-    'The smell of fresh coffee in the morning',
-    'A walk that turned into an adventure',
-    'Trying to make the perfect cake',
-    'A very good day for being outdoors',
-    'The simple pleasure of clean sheets',
-    'A quiet night with music and a book',
-    'Spring cannot come soon enough',
-    'A memorable meal with good company',
-    'The local park was full of birds today',
-    'A beautiful little moment I nearly missed',
-    'Cooking without a recipe for once',
-    'An afternoon spent doing absolutely nothing',
-    'A new favourite tea',
-    'The sun finally came out',
-    'A walk through the woods in winter',
-    'A very good reason to bake something',
-    'The nicest light I have seen all week',
-    'A lazy Sunday and no complaints',
-];
-
-$comments = [
-    'That sounds lovely.',
-    'I completely agree with this.',
-    'This made me smile.',
-    'That sounds like a perfect afternoon.',
-    'I need to try this sometime.',
-    'What a great idea.',
-    'That sounds delicious.',
-    'Beautiful.',
-    'I have been meaning to do something similar.',
-    'This sounds wonderful.',
-    'Now I want to do the same.',
-    'That sounds like a good day.',
-    'I can almost picture it.',
-    'Very nice.',
-    'That is one of the best little pleasures.',
-    'I love this.',
-    'Sounds like a memorable one.',
-    'I might have to give that a go.',
-    'This is exactly my kind of afternoon.',
-    'Lovely little update.',
-];
-
-$replies = [
-    'Absolutely!',
-    'Yes, it really was.',
-    'You should definitely try it.',
-    'I would recommend it.',
-    'That was my favourite part too.',
-    'Same here.',
-    'It was even better than expected.',
-    'I think you would enjoy it.',
-    'Hopefully I can do it again soon.',
-    'It was worth the effort.',
-    'Could not agree more.',
-    'I am already looking forward to doing it again.',
+$topics = [
+    'breakfast' => [
+        'posts' => [
+            'Made scrambled eggs on toast this morning and somehow managed to get the eggs exactly right. Soft in the middle, crisp toast, plenty of pepper, and coffee strong enough to wake up the neighbours.',
+            'I have decided that a slow breakfast is one of the nicest small luxuries. No phone for twenty minutes, warm toast, fruit, and a second cup of coffee while the kitchen gradually fills with sunlight.',
+            'Tried making pancakes without measuring anything today. The first two were questionable, but by the third I had the heat right and ended up with a surprisingly good stack. Maple syrup definitely did most of the work.',
+        ],
+        'comments' => [
+            'The second cup of coffee is an essential part of the plan.',
+            'Getting the first pancake right is basically impossible.',
+            'Now I want pancakes for breakfast.',
+            'That sounds like a genuinely peaceful start to the day.',
+        ],
+        'replies' => [
+            'Exactly. The first one is just research.',
+            'The coffee was absolutely doing some heavy lifting.',
+            'Honestly, the slow part was my favourite.',
+        ],
+    ],
+    'walking' => [
+        'posts' => [
+            'Went out for a walk just before the rain and caught that strange bit of winter light where everything looks brighter than it should. Came home five minutes before the rain started, which feels like a small victory.',
+            'Found a new route through the park today. It adds about fifteen minutes to the usual walk, but there are fewer cars, more trees, and a bench overlooking the river that I had somehow never noticed before.',
+            'A short walk turned into nearly two hours because I kept taking the next path just to see where it went. I should probably have checked the weather first, but the clouds stayed away and it was worth it.',
+        ],
+        'comments' => [
+            'Those accidental long walks are usually the best ones.',
+            'A quiet route makes such a difference.',
+            'That sounds like a good place to discover by accident.',
+            'Did you get caught by the rain in the end?',
+        ],
+        'replies' => [
+            'No rain in the end, somehow I timed it perfectly.',
+            'It really does. I barely saw another person.',
+            'I am definitely going back when the weather is better.',
+        ],
+    ],
+    'books' => [
+        'posts' => [
+            'Finally finished the novel I had been carrying around for weeks. The ending was not quite what I expected, but I liked that it trusted the reader to work out what happened rather than explaining every last detail.',
+            'There is something satisfying about finding a second-hand book with someone else’s notes in the margins. I found one today with a few tiny pencil marks and a ticket tucked inside from a cinema that closed years ago.',
+            'Started a book last night intending to read one chapter before bed. Four chapters later I was still awake, completely ignoring the sensible part of my brain telling me that tomorrow morning was going to arrive very quickly.',
+        ],
+        'comments' => [
+            'Those are the books that make you lose track of time.',
+            'I love finding little pieces of someone else’s life in old books.',
+            'Was the ending satisfying or just surprising?',
+            'One chapter before bed is a dangerous promise.',
+        ],
+        'replies' => [
+            'A bit of both, but I think it worked.',
+            'Exactly. It makes the book feel like it has its own history.',
+            'I definitely regretted saying one chapter.',
+        ],
+    ],
+    'cafe' => [
+        'posts' => [
+            'Found a tiny café tucked away on a side street today. Nothing fancy, just good coffee, a couple of wooden tables, and someone playing quiet music behind the counter. I stayed much longer than planned.',
+            'There is a particular kind of happiness in finding a café where nobody seems to mind if you sit with a book for an hour. Good coffee helps, obviously, but the quiet atmosphere is the real reason I will probably go back.',
+            'Tried the little café everyone keeps recommending. The coffee was excellent, the cake was even better, and I now understand why people apparently queue outside on Saturday mornings.',
+        ],
+        'comments' => [
+            'The quiet cafés are always worth keeping secret.',
+            'What cake did you have?',
+            'Sounds like I need to add this place to my list.',
+            'A good café can completely change the mood of a day.',
+        ],
+        'replies' => [
+            'Chocolate cake, and it was dangerously good.',
+            'I think the atmosphere was what sold me too.',
+            'Definitely worth trying if you are nearby.',
+        ],
+    ],
+    'cooking' => [
+        'posts' => [
+            'Tried a new pasta recipe tonight and it turned into one of those meals that tastes much more complicated than it actually was. Garlic, tomatoes, basil, parmesan, and enough chilli to make the whole kitchen smell wonderful.',
+            'Made soup from whatever was left in the fridge instead of following a recipe. Carrots, lentils, onions, tomatoes, and a little smoked paprika somehow became exactly the kind of dinner I wanted on a cold evening.',
+            'I finally made the recipe I had bookmarked months ago. It took longer than expected and used nearly every pan in the kitchen, but the finished meal was good enough that I immediately forgot about the washing up.',
+        ],
+        'comments' => [
+            'Improvised recipes are surprisingly satisfying when they work.',
+            'That sounds delicious. The chilli is the important part.',
+            'Using every pan is the true sign of a serious dinner.',
+            'Would you make it again?',
+        ],
+        'replies' => [
+            'Absolutely. I would probably make a double batch next time.',
+            'The chilli definitely made it better.',
+            'Yes, although I might reduce the washing-up somehow.',
+        ],
+    ],
+    'sunset' => [
+        'posts' => [
+            'The sky went completely orange for about ten minutes this evening. I nearly ignored it because I was busy, then looked out the window and ended up standing there until the colours faded. Glad I stopped for a moment.',
+            'Caught the sunset from the top of the hill today. The clouds were moving quickly and the light kept changing every few seconds, so every photo looked different even though I barely moved.',
+            'One of those evenings where the sunset makes the whole street look unfamiliar. Same houses, same road, but everything had this warm golden glow for a few minutes.',
+        ],
+        'comments' => [
+            'Those few minutes always disappear far too quickly.',
+            'Sometimes the best photos are the ones you almost did not take.',
+            'Golden hour makes everything look better.',
+            'I wish sunsets lasted about three times as long.',
+        ],
+        'replies' => [
+            'Exactly. I am glad I looked up when I did.',
+            'The light was changing too quickly to keep up with.',
+            'Same. Ten minutes feels unfairly short.',
+        ],
+    ],
+    'garden' => [
+        'posts' => [
+            'Spent the afternoon in the garden and found the first tiny signs that spring is actually on its way. A few shoots are appearing, the birds are getting noisier, and the whole place feels slightly less asleep than it did a few weeks ago.',
+            'Started a few seeds on the windowsill today. I have absolutely no idea whether I am doing everything correctly, but there is something very satisfying about checking tiny pots every morning and looking for the first green shoots.',
+            'Finally cleared the corner of the garden that had been bothering me all winter. It took most of the afternoon, but now there is room for a couple of new plants and the space already feels completely different.',
+        ],
+        'comments' => [
+            'The first shoots always feel like a small miracle.',
+            'What are you hoping to grow?',
+            'I love that feeling when a neglected corner finally gets sorted.',
+            'Checking the pots every morning is half the fun.',
+        ],
+        'replies' => [
+            'Mostly herbs and a few flowers to start with.',
+            'Exactly. Even when nothing has changed, I still check.',
+            'It already feels much more useful.',
+        ],
+    ],
+    'films' => [
+        'posts' => [
+            'Rewatched one of my favourite films tonight and it still holds up surprisingly well. I had forgotten how good the soundtrack was, and there were several little details I noticed this time that completely passed me by before.',
+            'Had a proper film night for the first time in ages. Lights off, snacks ready, phone in another room, and no attempt to multitask. It was much nicer than half-watching something while scrolling.',
+            'Watched an old film I had never seen before and spent the first twenty minutes wondering why everyone had recommended it. Then it suddenly clicked and by the end I understood exactly why it had stayed popular for so long.',
+        ],
+        'comments' => [
+            'A proper film night with the phone in another room sounds perfect.',
+            'Rewatching films is great when you notice new things.',
+            'What was the soundtrack like?',
+            'Sometimes a film takes a while to find its rhythm.',
+        ],
+        'replies' => [
+            'Much better than I remembered. It really carried the atmosphere.',
+            'Exactly. I think I appreciated it more this time.',
+            'The first half was slow, but the payoff was worth it.',
+        ],
+    ],
+    'music' => [
+        'posts' => [
+            'Found an old record I had completely forgotten about while sorting through a box today. Put it on while making dinner and immediately remembered why I liked it. Some songs seem to store an entire period of your life inside them.',
+            'Spent the evening listening to an album from beginning to end instead of picking individual songs. I had forgotten how different an album feels when you hear the tracks in the order the artist intended.',
+            'There is something very satisfying about putting a record on, turning the volume up slightly, and then actually listening instead of doing five other things at the same time.',
+        ],
+        'comments' => [
+            'Old records really do bring memories back instantly.',
+            'Albums definitely feel different when you hear them from start to finish.',
+            'What record did you find?',
+            'Sometimes doing one thing properly is the best way to spend an evening.',
+        ],
+        'replies' => [
+            'It was an album I listened to constantly years ago.',
+            'That was exactly what I liked about it.',
+            'I think I am going to make a habit of doing this more often.',
+        ],
+    ],
+    'food' => [
+        'posts' => [
+            'Stopped at the market on the way home and came back with far more food than I needed. Fresh bread, tomatoes, apples, cheese, and a bunch of herbs. I had no plan for dinner, but the ingredients have already made the decision for me.',
+            'Made a very simple lunch today with good ingredients and almost no effort. Fresh bread, ripe tomatoes, olive oil, cheese, and black pepper. It is difficult to improve on food that does not need much doing to it.',
+            'The market was unusually good this morning. Lots of fresh produce, a bakery stall that smelled incredible, and enough samples to convince me that buying lunch there was probably the sensible option.',
+        ],
+        'comments' => [
+            'Fresh bread makes almost any lunch better.',
+            'Sometimes the simplest meals are the most satisfying.',
+            'A market bakery is impossible to walk past.',
+            'What did you end up making for dinner?',
+        ],
+        'replies' => [
+            'Tomato pasta with everything I brought home.',
+            'Exactly. Good ingredients do most of the work.',
+            'I bought more bread than any reasonable person needs.',
+        ],
+    ],
+    'home' => [
+        'posts' => [
+            'Spent the evening doing absolutely nothing productive and it was wonderful. Clean sheets, a cup of tea, music in the background, and no urgent reason to leave the sofa. I think I needed a quiet night more than I realised.',
+            'There is an underrated pleasure in getting the house completely tidy and then sitting down while everything stays exactly where it belongs. It probably will not last long, but for now I am enjoying the illusion of order.',
+            'Rainy evening, warm lamp on, book beside me, and something cooking slowly in the oven. It is hard to complain about weather when it gives you a good excuse to stay indoors.',
+        ],
+        'comments' => [
+            'Doing nothing productive is sometimes exactly what is needed.',
+            'The clean house feeling never lasts long enough.',
+            'That sounds like an ideal rainy evening.',
+            'Now I want tea and a book.',
+        ],
+        'replies' => [
+            'That was exactly the plan, and it worked.',
+            'I am enjoying it while it lasts.',
+            'Tea definitely made the evening better.',
+        ],
+    ],
 ];
 
 $pdo->beginTransaction();
 
 try {
-    $insertUser = $pdo->prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)');
-    $userIds = [];
+    $uploadBase = __DIR__ . '/../uploads';
+    $avatarDir = $uploadBase . '/avatars';
+    $postImageDir = $uploadBase . '/posts';
 
-    foreach ($users as [$username, $password]) {
-        $insertUser->execute([$username, password_hash($password, PASSWORD_DEFAULT)]);
-        $userIds[$username] = (int)$pdo->lastInsertId();
+    foreach ([$avatarDir, $postImageDir] as $dir) {
+        if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+            throw new RuntimeException("Unable to create directory: {$dir}");
+        }
     }
 
+    $insertUser = $pdo->prepare(
+        'INSERT INTO users (username, password_hash, avatar_path) VALUES (?, ?, ?)'
+    );
     $insertPost = $pdo->prepare(
-        'INSERT INTO posts (user_id, content, created_at, updated_at, edit_count) VALUES (?, ?, ?, NULL, 0)'
+        'INSERT INTO posts (user_id, content, image_path, created_at, updated_at, edit_count) VALUES (?, ?, ?, ?, NULL, 0)'
     );
     $insertComment = $pdo->prepare(
         'INSERT INTO comments (post_id, user_id, parent_id, content, created_at) VALUES (?, ?, ?, ?, ?)'
@@ -157,63 +257,205 @@ try {
         'INSERT OR IGNORE INTO follows (follower_id, following_id, created_at) VALUES (?, ?, ?)'
     );
 
-    $usedSubjects = [];
-    $postIds = [];
-    $postOwners = [];
+    $userIds = [];
+    $userTopics = [
+        'admin' => ['music', 'walking', 'home'],
+        'alice' => ['garden', 'cafe', 'sunset'],
+        'ben' => ['walking', 'food', 'films'],
+        'clara' => ['books', 'cafe', 'home'],
+        'daniel' => ['cooking', 'breakfast', 'food'],
+        'emma' => ['garden', 'breakfast', 'walking'],
+        'frank' => ['music', 'films', 'cafe'],
+    ];
 
-    $startDate = new DateTimeImmutable('2026-02-01 00:00:00');
-    $endDate = new DateTimeImmutable('now');
+    // Simple generated avatars: square WebP images with a distinct geometric design.
+    $avatarPalettes = [
+        [[48, 66, 84], [226, 232, 238]],
+        [[76, 112, 84], [231, 239, 225]],
+        [[93, 76, 58], [239, 229, 214]],
+        [[91, 75, 112], [233, 226, 240]],
+        [[119, 82, 64], [242, 226, 216]],
+        [[57, 103, 100], [220, 238, 235]],
+        [[99, 82, 55], [240, 234, 218]],
+    ];
+
+    foreach ($users as $index => [$username, $password]) {
+        $avatar = imagecreatetruecolor(150, 150);
+        $palette = $avatarPalettes[$index];
+        $background = imagecolorallocate($avatar, ...$palette[1]);
+        $foreground = imagecolorallocate($avatar, ...$palette[0]);
+        imagefill($avatar, 0, 0, $background);
+        imagefilledellipse($avatar, 75, 75, 100, 100, $foreground);
+        imagefilledellipse($avatar, 75, 48, 42, 42, $background);
+        imagefilledrectangle($avatar, 48, 86, 102, 125, $background);
+
+        $filename = bin2hex(random_bytes(16)) . '.webp';
+        $destination = $avatarDir . '/' . $filename;
+
+        if (!imagewebp($avatar, $destination, 82)) {
+            imagedestroy($avatar);
+            throw new RuntimeException("Unable to create avatar for {$username}.");
+        }
+
+        imagedestroy($avatar);
+        $avatarPath = 'uploads/avatars/' . $filename;
+
+        $insertUser->execute([
+            $username,
+            password_hash($password, PASSWORD_DEFAULT),
+            $avatarPath,
+        ]);
+
+        $userIds[$username] = (int)$pdo->lastInsertId();
+    }
+
+    $startDate = new DateTimeImmutable('2026-02-01 00:00:00', new DateTimeZone('UTC'));
+    $endDate = new DateTimeImmutable('now', new DateTimeZone('UTC'));
     $startTimestamp = $startDate->getTimestamp();
     $endTimestamp = $endDate->getTimestamp();
 
+    $posts = [];
+    $usedPostText = [];
+
+    // Generate the complete post pool first. This keeps users intermingled when
+    // the application later sorts posts by created_at.
     foreach ($userIds as $username => $userId) {
         $postCount = random_int(6, 10);
 
         for ($i = 0; $i < $postCount; $i++) {
             do {
-                $subject = $postSubjects[array_rand($postSubjects)];
-            } while (isset($usedSubjects[$username . '|' . $subject]));
+                $topic = $userTopics[$username][array_rand($userTopics[$username])];
+                $postText = $topics[$topic]['posts'][array_rand($topics[$topic]['posts'])];
+            } while (isset($usedPostText[$postText]));
 
-            $usedSubjects[$username . '|' . $subject] = true;
+            $usedPostText[$postText] = true;
+            $createdTimestamp = random_int($startTimestamp, $endTimestamp);
 
-            $createdAt = date('Y-m-d H:i:s', random_int($startTimestamp, $endTimestamp));
-            $postText = $subject;
+            $posts[] = [
+                'user_id' => $userId,
+                'username' => $username,
+                'topic' => $topic,
+                'content' => $postText,
+                'created_timestamp' => $createdTimestamp,
+            ];
+        }
+    }
 
-            $insertPost->execute([$userId, $postText, $createdAt]);
+    shuffle($posts);
 
-            $postId = (int)$pdo->lastInsertId();
-            $postIds[] = $postId;
-            $postOwners[$postId] = $userId;
+    $postIds = [];
+    $postOwners = [];
+    $postTimestamps = [];
 
-            $postTimestamp = strtotime($createdAt);
-            $commentCount = random_int(2, 4);
+    foreach ($posts as $post) {
+        $createdAt = gmdate('Y-m-d H:i:s', $post['created_timestamp']);
+        $imagePath = null;
 
-            for ($c = 0; $c < $commentCount; $c++) {
-                $commentUserId = $userIds[array_rand($userIds)];
-                $commentTimestamp = random_int($postTimestamp, min($postTimestamp + (7 * 86400), $endTimestamp));
-                $commentAt = date('Y-m-d H:i:s', $commentTimestamp);
+        // Roughly one post in five gets a generated landscape image.
+        if (random_int(1, 5) === 1) {
+            $width = random_int(640, 1000);
+            $height = random_int(360, 700);
+            $image = imagecreatetruecolor($width, $height);
+
+            $sky = imagecolorallocate($image, random_int(55, 115), random_int(90, 170), random_int(130, 215));
+            $ground = imagecolorallocate($image, random_int(45, 105), random_int(70, 125), random_int(45, 90));
+            $sun = imagecolorallocate($image, random_int(220, 255), random_int(175, 230), random_int(80, 150));
+
+            imagefill($image, 0, 0, $sky);
+            imagefilledrectangle($image, 0, (int)($height * 0.62), $width, $height, $ground);
+            imagefilledellipse($image, random_int((int)($width * 0.2), (int)($width * 0.8)), random_int((int)($height * 0.15), (int)($height * 0.45)), random_int(80, 150), random_int(80, 150), $sun);
+
+            for ($shape = 0; $shape < 12; $shape++) {
+                $treeX = random_int(0, $width);
+                $treeY = random_int((int)($height * 0.45), (int)($height * 0.7));
+                imagefilledpolygon($image, [
+                    $treeX, $treeY - random_int(30, 80),
+                    $treeX - random_int(15, 35), $treeY + 10,
+                    $treeX + random_int(15, 35), $treeY + 10,
+                ], $ground);
+            }
+
+            $filename = bin2hex(random_bytes(16)) . '.webp';
+            $destination = $postImageDir . '/' . $filename;
+
+            if (!imagewebp($image, $destination, 82)) {
+                imagedestroy($image);
+                throw new RuntimeException('Unable to create a seeded post image.');
+            }
+
+            imagedestroy($image);
+            $imagePath = 'uploads/posts/' . $filename;
+        }
+
+        $insertPost->execute([
+            $post['user_id'],
+            $post['content'],
+            $imagePath,
+            $createdAt,
+        ]);
+
+        $postId = (int)$pdo->lastInsertId();
+        $postIds[] = $postId;
+        $postOwners[$postId] = $post['user_id'];
+        $postTimestamps[$postId] = $post['created_timestamp'];
+        $posts[array_key_last($posts)]['id'] = $postId;
+    }
+
+    // Add contextual conversations after all posts exist so comment authors can
+    // be selected independently from post authors.
+    foreach ($posts as $post) {
+        if (!isset($post['id'])) {
+            continue;
+        }
+
+        $postId = $post['id'];
+        $topic = $post['topic'];
+        $postTimestamp = $post['created_timestamp'];
+        $commentCount = random_int(2, 4);
+
+        for ($c = 0; $c < $commentCount; $c++) {
+            $commentUsernames = array_keys($userIds);
+            $commentUsername = $commentUsernames[array_rand($commentUsernames)];
+            $commentUserId = $userIds[$commentUsername];
+            $commentTimestamp = random_int($postTimestamp, min($postTimestamp + (7 * 86400), $endTimestamp));
+
+            $insertComment->execute([
+                $postId,
+                $commentUserId,
+                null,
+                $topics[$topic]['comments'][array_rand($topics[$topic]['comments'])],
+                gmdate('Y-m-d H:i:s', $commentTimestamp),
+            ]);
+
+            $commentId = (int)$pdo->lastInsertId();
+
+            if (random_int(1, 100) <= 70) {
+                $replyUsername = $commentUsernames[array_rand($commentUsernames)];
+                $replyUserId = $userIds[$replyUsername];
+                $replyTimestamp = random_int($commentTimestamp, min($commentTimestamp + (3 * 86400), $endTimestamp));
 
                 $insertComment->execute([
                     $postId,
-                    $commentUserId,
-                    null,
-                    $comments[array_rand($comments)],
-                    $commentAt,
+                    $replyUserId,
+                    $commentId,
+                    $topics[$topic]['replies'][array_rand($topics[$topic]['replies'])],
+                    gmdate('Y-m-d H:i:s', $replyTimestamp),
                 ]);
 
-                $commentId = (int)$pdo->lastInsertId();
+                $replyId = (int)$pdo->lastInsertId();
 
-                if (random_int(0, 100) < 70) {
-                    $replyUserId = $userIds[array_rand($userIds)];
-                    $replyTimestamp = random_int($commentTimestamp, min($commentTimestamp + (3 * 86400), $endTimestamp));
-                    $replyAt = date('Y-m-d H:i:s', $replyTimestamp);
+                // Some replies receive a second-level reply to exercise nested threads.
+                if (random_int(1, 100) <= 25) {
+                    $nestedUsername = $commentUsernames[array_rand($commentUsernames)];
+                    $nestedUserId = $userIds[$nestedUsername];
+                    $nestedTimestamp = random_int($replyTimestamp, min($replyTimestamp + (2 * 86400), $endTimestamp));
 
                     $insertComment->execute([
                         $postId,
-                        $replyUserId,
-                        $commentId,
-                        $replies[array_rand($replies)],
-                        $replyAt,
+                        $nestedUserId,
+                        $replyId,
+                        $topics[$topic]['replies'][array_rand($topics[$topic]['replies'])],
+                        gmdate('Y-m-d H:i:s', $nestedTimestamp),
                     ]);
                 }
             }
@@ -221,27 +463,48 @@ try {
     }
 
     $allUserIds = array_values($userIds);
-    $now = date('Y-m-d H:i:s');
 
-    foreach ($allUserIds as $followerId) {
-        foreach ($allUserIds as $followingId) {
-            if ($followerId === $followingId || random_int(0, 100) >= 45) {
-                continue;
-            }
+    // Deliberately create a small social graph with both mutual and one-way follows.
+    $followPlan = [
+        'admin' => ['alice', 'clara'],
+        'alice' => ['admin', 'emma', 'frank'],
+        'ben' => ['daniel', 'emma'],
+        'clara' => ['alice', 'emma'],
+        'daniel' => ['ben', 'frank'],
+        'emma' => ['clara', 'ben'],
+        'frank' => ['alice', 'daniel'],
+    ];
 
-            $insertFollow->execute([$followerId, $followingId, $now]);
+    $followTime = gmdate('Y-m-d H:i:s', $endTimestamp);
+
+    foreach ($followPlan as $follower => $followingUsers) {
+        foreach ($followingUsers as $following) {
+            $insertFollow->execute([
+                $userIds[$follower],
+                $userIds[$following],
+                $followTime,
+            ]);
         }
     }
 
+    // Distribute likes across other users, while ensuring every post gets some activity.
     foreach ($postIds as $postId) {
         $ownerId = $postOwners[$postId];
+        $likers = $allUserIds;
+        shuffle($likers);
+        $likeCount = random_int(1, 5);
 
-        foreach ($allUserIds as $userId) {
-            if ($userId === $ownerId || random_int(0, 100) >= 35) {
+        foreach (array_slice($likers, 0, $likeCount) as $userId) {
+            if ($userId === $ownerId) {
                 continue;
             }
 
-            $insertLike->execute([$userId, $postId, $now]);
+            $likeTimestamp = random_int($postTimestamps[$postId], $endTimestamp);
+            $insertLike->execute([
+                $userId,
+                $postId,
+                gmdate('Y-m-d H:i:s', $likeTimestamp),
+            ]);
         }
     }
 
@@ -249,6 +512,7 @@ try {
 
     $userCount = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
     $postCount = (int)$pdo->query('SELECT COUNT(*) FROM posts')->fetchColumn();
+    $imageCount = (int)$pdo->query('SELECT COUNT(*) FROM posts WHERE image_path IS NOT NULL')->fetchColumn();
     $commentCount = (int)$pdo->query('SELECT COUNT(*) FROM comments')->fetchColumn();
     $likeCount = (int)$pdo->query('SELECT COUNT(*) FROM likes')->fetchColumn();
     $followCount = (int)$pdo->query('SELECT COUNT(*) FROM follows')->fetchColumn();
@@ -256,6 +520,7 @@ try {
     echo "Seed complete.\n";
     echo "Users: {$userCount}\n";
     echo "Posts: {$postCount}\n";
+    echo "Posts with images: {$imageCount}\n";
     echo "Comments/replies: {$commentCount}\n";
     echo "Likes: {$likeCount}\n";
     echo "Follows: {$followCount}\n";
