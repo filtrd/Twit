@@ -11,6 +11,9 @@ $tagLine = 'Share short thoughts with the world.';
 // Maximum length allowed for a post.
 $maxPostLength = 280;
 
+// Number of posts loaded per feed batch.
+$feedPageSize = 20;
+
 // Maximum number of times a post can be edited.
 $postEditCount = '2';
 
