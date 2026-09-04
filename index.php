@@ -209,6 +209,7 @@ if (emojiButton && emojiPicker) {
 }
 
 document.querySelectorAll('.post-delete-form').forEach(form => {
+    form.dataset.deleteBound = '1';
     form.addEventListener('submit', event => {
         if (!deleteDialog) return;
         event.preventDefault();
@@ -227,6 +228,7 @@ if (deleteDialog) {
 }
 
 document.querySelectorAll('.post-menu').forEach(menu => {
+    menu.dataset.menuBound = '1';
     const button = menu.querySelector('.post-menu-button');
     const dropdown = menu.querySelector('.post-menu-dropdown');
     button.addEventListener('click', event => {
