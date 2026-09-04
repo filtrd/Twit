@@ -7,6 +7,7 @@ $user = current_user();
 $postError = get_flash('post_error');
 $postDraft = get_flash('post_draft') ?? '';
 $feedPageSize = (int)$feedPageSize;
+$feedQueryLimit = $feedPageSize + 1;
 
 $stmt = db()->query(<<<SQL
 SELECT p.id, p.content, p.image_path, p.created_at, p.updated_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path,
@@ -15,7 +16,7 @@ SELECT p.id, p.content, p.image_path, p.created_at, p.updated_at, p.edit_count, 
 FROM posts p
 JOIN users u ON u.id = p.user_id
 ORDER BY p.created_at DESC, p.id DESC
-LIMIT {$feedPageSize + 1}
+LIMIT {$feedQueryLimit}
 SQL);
 $posts = $stmt->fetchAll();
 
