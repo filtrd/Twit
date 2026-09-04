@@ -11,14 +11,14 @@ export function initFeed({ bindLoadedPostActions } = {}) {
         : 'feed.php?cursor=';
 
     let loadingFeed = false;
-    let feedObserverArmed = false;
+    let feedObserverArmed = true;
 
     const observer = new IntersectionObserver(entries => {
         const entry = entries[0];
         if (!entry) return;
 
         if (!entry.isIntersecting) {
-            feedObserverArmed = false;
+            feedObserverArmed = true;
             return;
         }
 
@@ -63,19 +63,17 @@ export function initFeed({ bindLoadedPostActions } = {}) {
             }
         } finally {
             loadingFeed = false;
-            armFeedObserver();
+            if (feed.dataset.hasMore === '1') {
+                observer.observe(feedSentinel);
+            }
         }
     }
 
-    function armFeedObserver() {
-        if (loadingFeed || feedObserverArmed || feed.dataset.hasMore !== '1') return;
-        feedObserverArmed = true;
-        observer.observe(feedSentinel);
-    }
-
-    armFeedObserver();
+    observer.observe(feedSentinel);
 
     window.addEventListener('scroll', () => {
-        armFeedObserver();
+        if (!loadingFeed && feed.dataset.hasMore === '1' && !feedObserverArmed) {
+            observer.observe(feedSentinel);
+        }
     }, { passive: true });
 }
