@@ -60,3 +60,5 @@ SQL);
 
 $pdo->exec('CREATE INDEX IF NOT EXISTS comments_post_id_idx ON comments(post_id)');
 $pdo->exec('CREATE INDEX IF NOT EXISTS comments_parent_id_idx ON comments(parent_id)');
+$pdo->exec('CREATE INDEX IF NOT EXISTS posts_created_id_idx ON posts(created_at DESC, id DESC)');
+$pdo->exec('CREATE INDEX IF NOT EXISTS posts_user_created_id_idx ON posts(user_id, created_at DESC, id DESC)');
