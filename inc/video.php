@@ -30,3 +30,15 @@ function detectVideo(string $url): ?array
 
     return null;
 }
+
+function renderVideoEmbed(array $video): string
+{
+    $id = htmlspecialchars((string)$video['id'], ENT_QUOTES, 'UTF-8');
+
+    return match ($video['provider']) {
+        'youtube' => '<div class="post-video post-video-youtube"><iframe src="https://www.youtube-nocookie.com/embed/' . $id . '" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>',
+        'tiktok' => '<div class="post-video post-video-tiktok"><iframe src="https://www.tiktok.com/player/v1/' . $id . '" title="TikTok video" loading="lazy" allow="fullscreen" allowfullscreen></iframe></div>',
+        'instagram' => '<div class="post-video post-video-instagram"><iframe src="https://www.instagram.com/' . htmlspecialchars((string)$video['type'], ENT_QUOTES, 'UTF-8') . '/' . $id . '/embed" title="Instagram post" loading="lazy" allow="fullscreen" allowfullscreen></iframe></div>',
+        default => '',
+    };
+}
