@@ -420,15 +420,15 @@ try {
     }
 
     progress('Creating follow graph...');
-    $followPlan = [
-        'admin' => ['alice', 'clara'],
-        'alice' => ['admin', 'emma', 'frank'],
-        'ben' => ['daniel', 'emma'],
-        'clara' => ['alice', 'emma'],
-        'daniel' => ['ben', 'frank'],
-        'emma' => ['clara', 'ben'],
-        'frank' => ['alice', 'daniel'],
-    ];
+$followPlan = [
+    'admin' => ['Enigma', 'paperbound'],
+    'Enigma' => ['admin', 'Hornpub', 'LagSpawn'],
+    'NebulaNinja' => ['Pulse', 'Hornpub'],
+    'paperbound' => ['Enigma', 'Hornpub'],
+    'Pulse' => ['NebulaNinja', 'LagSpawn'],
+    'Hornpub' => ['paperbound', 'NebulaNinja'],
+    'LagSpawn' => ['Enigma', 'Pulse'],
+];
 
     $followTime = gmdate('Y-m-d H:i:s', $endTimestamp);
     foreach ($followPlan as $follower => $followingUsers) {
