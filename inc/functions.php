@@ -52,6 +52,31 @@ function verify_csrf(): void
 function set_flash(string $key, string $message): void { $_SESSION['flash'][$key] = $message; }
 function get_flash(string $key): ?string { $message = $_SESSION['flash'][$key] ?? null; unset($_SESSION['flash'][$key]); return $message; }
 
+function encodeFeedCursor(array $post): string
+{
+    $payload = json_encode([
+        'created_at' => $post['created_at'],
+        'id' => (int)$post['id'],
+    ], JSON_THROW_ON_ERROR);
+    return rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
+}
+
+function decodeFeedCursor(string $cursor): array
+{
+    $encodedCursor = strtr($cursor, '-_', '+/');
+    $encodedCursor .= str_repeat('=', (4 - strlen($encodedCursor) % 4) % 4);
+    $decoded = base64_decode($encodedCursor, true);
+
+    if ($decoded === false) throw new InvalidArgumentException('Invalid cursor');
+
+    $data = json_decode($decoded, true);
+    if (!is_array($data) || !isset($data['created_at'], $data['id']) || !is_string($data['created_at']) || !is_int($data['id'])) {
+        throw new InvalidArgumentException('Invalid cursor');
+    }
+
+    return $data;
+}
+
 function postCharacterCount(string $content): int
 {
     $content = str_replace(["\r\n", "\r"], "\n", $content);
