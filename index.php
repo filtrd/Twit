@@ -6,6 +6,8 @@ require_once __DIR__ . '/inc/config.php';
 $user = current_user();
 $postError = get_flash('post_error');
 $postDraft = get_flash('post_draft') ?? '';
+$feedPageSize = 20;
+
 $stmt = db()->query(<<<'SQL'
 SELECT p.id, p.content, p.image_path, p.created_at, p.updated_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path,
        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
@@ -13,8 +15,22 @@ SELECT p.id, p.content, p.image_path, p.created_at, p.updated_at, p.edit_count, 
 FROM posts p
 JOIN users u ON u.id = p.user_id
 ORDER BY p.created_at DESC, p.id DESC
+LIMIT 21
 SQL);
 $posts = $stmt->fetchAll();
+
+$hasMorePosts = count($posts) > $feedPageSize;
+if ($hasMorePosts) array_pop($posts);
+
+$nextFeedCursor = null;
+if ($hasMorePosts && $posts) {
+    $lastPost = $posts[array_key_last($posts)];
+    $cursorPayload = json_encode([
+        'created_at' => $lastPost['created_at'],
+        'id' => (int)$lastPost['id'],
+    ], JSON_THROW_ON_ERROR);
+    $nextFeedCursor = rtrim(strtr(base64_encode($cursorPayload), '+/', '-_'), '=');
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -80,7 +96,7 @@ $posts = $stmt->fetchAll();
             <p class="form-error"><?= e($postError) ?></p>
         <?php endif; ?>
 
-        <section class="feed">
+        <section class="feed" id="feed" data-next-cursor="<?= e($nextFeedCursor ?? '') ?>" data-has-more="<?= $hasMorePosts ? '1' : '0' ?>">
             <?php foreach ($posts as $post): ?>
                 <?php renderPost($post, $user); ?>
             <?php endforeach; ?>
@@ -89,6 +105,7 @@ $posts = $stmt->fetchAll();
                 <p class="empty">No posts yet. Be the first!</p>
             <?php endif; ?>
         </section>
+        <?php if ($hasMorePosts): ?><p id="feed-status" class="empty" hidden>Loading more posts…</p><?php endif; ?>
     </div>
 </main>
 
@@ -116,6 +133,8 @@ const selectedImage = document.getElementById('selected-image');
 const emojiButton = document.getElementById('emoji-button');
 const emojiPicker = document.getElementById('emoji-picker');
 const deleteDialog = document.getElementById('delete-dialog');
+const feed = document.getElementById('feed');
+const feedStatus = document.getElementById('feed-status');
 const maxPostLength = <?= (int)$maxPostLength ?>;
 let pendingDeleteForm = null;
 
@@ -224,6 +243,70 @@ document.addEventListener('click', () => {
     document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
     document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
 });
+
+function bindLoadedPostActions() {
+    document.querySelectorAll('.post-delete-form:not([data-delete-bound])').forEach(form => {
+        form.dataset.deleteBound = '1';
+        form.addEventListener('submit', event => {
+            if (!deleteDialog) return;
+            event.preventDefault();
+            pendingDeleteForm = form;
+            deleteDialog.showModal();
+        });
+    });
+
+    document.querySelectorAll('.post-menu:not([data-menu-bound])').forEach(menu => {
+        menu.dataset.menuBound = '1';
+        const button = menu.querySelector('.post-menu-button');
+        const dropdown = menu.querySelector('.post-menu-dropdown');
+        button.addEventListener('click', event => {
+            event.stopPropagation();
+            const open = !dropdown.hidden;
+            document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
+            document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
+            dropdown.hidden = open;
+            button.setAttribute('aria-expanded', String(!open));
+        });
+    });
+}
+
+let loadingFeed = false;
+
+async function loadMorePosts() {
+    if (!feed || loadingFeed || feed.dataset.hasMore !== '1') return;
+    const cursor = feed.dataset.nextCursor;
+    if (!cursor) return;
+
+    loadingFeed = true;
+    if (feedStatus) feedStatus.hidden = false;
+
+    try {
+        const response = await fetch('feed.php?cursor=' + encodeURIComponent(cursor), { headers: { 'Accept': 'application/json' } });
+        if (!response.ok) throw new Error('Feed request failed');
+        const data = await response.json();
+        if (data.html) feed.insertAdjacentHTML('beforeend', data.html);
+        feed.dataset.nextCursor = data.next_cursor || '';
+        feed.dataset.hasMore = data.has_more ? '1' : '0';
+        bindLoadedPostActions();
+        if (!data.has_more && feedStatus) feedStatus.hidden = true;
+    } catch (error) {
+        if (feedStatus) {
+            feedStatus.hidden = false;
+            feedStatus.textContent = 'Could not load more posts. Try again.';
+        }
+    } finally {
+        loadingFeed = false;
+    }
+}
+
+bindLoadedPostActions();
+
+if (feed && feed.dataset.hasMore === '1') {
+    const observer = new IntersectionObserver(entries => {
+        if (entries.some(entry => entry.isIntersecting)) loadMorePosts();
+    }, { rootMargin: '600px 0px' });
+    if (feedStatus) observer.observe(feedStatus);
+}
 </script>
 </body>
 </html>
