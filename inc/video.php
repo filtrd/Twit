@@ -34,11 +34,12 @@ function detectVideo(string $url): ?array
 function renderVideoEmbed(array $video): string
 {
     $id = htmlspecialchars((string)$video['id'], ENT_QUOTES, 'UTF-8');
+    $baseStyle = 'width:100%;border:0;display:block;';
 
     return match ($video['provider']) {
-        'youtube' => '<div class="post-video post-video-youtube"><iframe src="https://www.youtube-nocookie.com/embed/' . $id . '" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>',
-        'tiktok' => '<div class="post-video post-video-tiktok"><iframe src="https://www.tiktok.com/player/v1/' . $id . '" title="TikTok video" loading="lazy" allow="fullscreen" allowfullscreen></iframe></div>',
-        'instagram' => '<div class="post-video post-video-instagram"><iframe src="https://www.instagram.com/' . htmlspecialchars((string)$video['type'], ENT_QUOTES, 'UTF-8') . '/' . $id . '/embed" title="Instagram post" loading="lazy" allow="fullscreen" allowfullscreen></iframe></div>',
+        'youtube' => '<div class="post-video post-video-youtube" style="position:relative;width:100%;aspect-ratio:16/9;margin:12px 0;overflow:hidden;background:#000"><iframe src="https://www.youtube-nocookie.com/embed/' . $id . '" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="' . $baseStyle . 'height:100%;position:absolute;inset:0"></iframe></div>',
+        'tiktok' => '<div class="post-video post-video-tiktok" style="position:relative;width:100%;max-width:325px;aspect-ratio:9/16;margin:12px 0;overflow:hidden;background:#000"><iframe src="https://www.tiktok.com/player/v1/' . $id . '" title="TikTok video" loading="lazy" allow="fullscreen" allowfullscreen style="' . $baseStyle . 'height:100%;position:absolute;inset:0"></iframe></div>',
+        'instagram' => '<div class="post-video post-video-instagram" style="position:relative;width:100%;aspect-ratio:1/1;margin:12px 0;overflow:hidden;background:#fff"><iframe src="https://www.instagram.com/' . htmlspecialchars((string)$video['type'], ENT_QUOTES, 'UTF-8') . '/' . $id . '/embed" title="Instagram post" loading="lazy" allow="fullscreen" allowfullscreen style="' . $baseStyle . 'height:100%;position:absolute;inset:0"></iframe></div>',
         default => '',
     };
 }
