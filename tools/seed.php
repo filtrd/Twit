@@ -268,7 +268,6 @@ try {
         'frank' => ['music', 'films', 'cafe'],
     ];
 
-    // Simple generated avatars: square WebP images with a distinct geometric design.
     $avatarPalettes = [
         [[48, 66, 84], [226, 232, 238]],
         [[76, 112, 84], [231, 239, 225]],
@@ -298,12 +297,11 @@ try {
         }
 
         imagedestroy($avatar);
-        $avatarPath = 'uploads/avatars/' . $filename;
 
         $insertUser->execute([
             $username,
             password_hash($password, PASSWORD_DEFAULT),
-            $avatarPath,
+            'uploads/avatars/' . $filename,
         ]);
 
         $userIds[$username] = (int)$pdo->lastInsertId();
@@ -317,8 +315,8 @@ try {
     $posts = [];
     $usedPostText = [];
 
-    // Generate the complete post pool first. This keeps users intermingled when
-    // the application later sorts posts by created_at.
+    // Build the complete post pool first so every user's posts are scattered
+    // naturally when the application orders them by created_at.
     foreach ($userIds as $username => $userId) {
         $postCount = random_int(6, 10);
 
@@ -329,14 +327,12 @@ try {
             } while (isset($usedPostText[$postText]));
 
             $usedPostText[$postText] = true;
-            $createdTimestamp = random_int($startTimestamp, $endTimestamp);
 
             $posts[] = [
                 'user_id' => $userId,
-                'username' => $username,
                 'topic' => $topic,
                 'content' => $postText,
-                'created_timestamp' => $createdTimestamp,
+                'created_timestamp' => random_int($startTimestamp, $endTimestamp),
             ];
         }
     }
@@ -346,12 +342,15 @@ try {
     $postIds = [];
     $postOwners = [];
     $postTimestamps = [];
+    $allUserIds = array_values($userIds);
+    $allUsernames = array_keys($userIds);
 
     foreach ($posts as $post) {
-        $createdAt = gmdate('Y-m-d H:i:s', $post['created_timestamp']);
+        $createdTimestamp = $post['created_timestamp'];
+        $createdAt = gmdate('Y-m-d H:i:s', $createdTimestamp);
         $imagePath = null;
 
-        // Roughly one post in five gets a generated landscape image.
+        // Roughly one post in five gets a generated landscape WebP image.
         if (random_int(1, 5) === 1) {
             $width = random_int(640, 1000);
             $height = random_int(360, 700);
@@ -363,7 +362,14 @@ try {
 
             imagefill($image, 0, 0, $sky);
             imagefilledrectangle($image, 0, (int)($height * 0.62), $width, $height, $ground);
-            imagefilledellipse($image, random_int((int)($width * 0.2), (int)($width * 0.8)), random_int((int)($height * 0.15), (int)($height * 0.45)), random_int(80, 150), random_int(80, 150), $sun);
+            imagefilledellipse(
+                $image,
+                random_int((int)($width * 0.2), (int)($width * 0.8)),
+                random_int((int)($height * 0.15), (int)($height * 0.45)),
+                random_int(80, 150),
+                random_int(80, 150),
+                $sun
+            );
 
             for ($shape = 0; $shape < 12; $shape++) {
                 $treeX = random_int(0, $width);
@@ -397,72 +403,63 @@ try {
         $postId = (int)$pdo->lastInsertId();
         $postIds[] = $postId;
         $postOwners[$postId] = $post['user_id'];
-        $postTimestamps[$postId] = $post['created_timestamp'];
-        $posts[array_key_last($posts)]['id'] = $postId;
-    }
+        $postTimestamps[$postId] = $createdTimestamp;
 
-    // Add contextual conversations after all posts exist so comment authors can
-    // be selected independently from post authors.
-    foreach ($posts as $post) {
-        if (!isset($post['id'])) {
-            continue;
-        }
-
-        $postId = $post['id'];
-        $topic = $post['topic'];
-        $postTimestamp = $post['created_timestamp'];
+        // Create the conversation while the post id and topic are in scope.
         $commentCount = random_int(2, 4);
 
         for ($c = 0; $c < $commentCount; $c++) {
-            $commentUsernames = array_keys($userIds);
-            $commentUsername = $commentUsernames[array_rand($commentUsernames)];
-            $commentUserId = $userIds[$commentUsername];
-            $commentTimestamp = random_int($postTimestamp, min($postTimestamp + (7 * 86400), $endTimestamp));
+            $commentUsername = $allUsernames[array_rand($allUsernames)];
+            $commentTimestamp = random_int(
+                $createdTimestamp,
+                min($createdTimestamp + (7 * 86400), $endTimestamp)
+            );
 
             $insertComment->execute([
                 $postId,
-                $commentUserId,
+                $userIds[$commentUsername],
                 null,
-                $topics[$topic]['comments'][array_rand($topics[$topic]['comments'])],
+                $topics[$post['topic']]['comments'][array_rand($topics[$post['topic']]['comments'])],
                 gmdate('Y-m-d H:i:s', $commentTimestamp),
             ]);
 
             $commentId = (int)$pdo->lastInsertId();
 
             if (random_int(1, 100) <= 70) {
-                $replyUsername = $commentUsernames[array_rand($commentUsernames)];
-                $replyUserId = $userIds[$replyUsername];
-                $replyTimestamp = random_int($commentTimestamp, min($commentTimestamp + (3 * 86400), $endTimestamp));
+                $replyUsername = $allUsernames[array_rand($allUsernames)];
+                $replyTimestamp = random_int(
+                    $commentTimestamp,
+                    min($commentTimestamp + (3 * 86400), $endTimestamp)
+                );
 
                 $insertComment->execute([
                     $postId,
-                    $replyUserId,
+                    $userIds[$replyUsername],
                     $commentId,
-                    $topics[$topic]['replies'][array_rand($topics[$topic]['replies'])],
+                    $topics[$post['topic']]['replies'][array_rand($topics[$post['topic']]['replies'])],
                     gmdate('Y-m-d H:i:s', $replyTimestamp),
                 ]);
 
                 $replyId = (int)$pdo->lastInsertId();
 
-                // Some replies receive a second-level reply to exercise nested threads.
                 if (random_int(1, 100) <= 25) {
-                    $nestedUsername = $commentUsernames[array_rand($commentUsernames)];
-                    $nestedUserId = $userIds[$nestedUsername];
-                    $nestedTimestamp = random_int($replyTimestamp, min($replyTimestamp + (2 * 86400), $endTimestamp));
+                    $nestedUsername = $allUsernames[array_rand($allUsernames)];
+                    $nestedTimestamp = random_int(
+                        $replyTimestamp,
+                        min($replyTimestamp + (2 * 86400), $endTimestamp)
+                    );
 
                     $insertComment->execute([
                         $postId,
-                        $nestedUserId,
+                        $userIds[$nestedUsername],
                         $replyId,
-                        $topics[$topic]['replies'][array_rand($topics[$topic]['replies'])],
+                        $topics[$post['topic']]['replies'][array_rand($topics[$post['topic']]['replies'])],
                         gmdate('Y-m-d H:i:s', $nestedTimestamp),
                     ]);
                 }
             }
         }
     }
-
-    $allUserIds = array_values($userIds);
 
     // Deliberately create a small social graph with both mutual and one-way follows.
     $followPlan = [
@@ -487,14 +484,14 @@ try {
         }
     }
 
-    // Distribute likes across other users, while ensuring every post gets some activity.
+    // Give each post some likes from other users.
     foreach ($postIds as $postId) {
         $ownerId = $postOwners[$postId];
         $likers = $allUserIds;
         shuffle($likers);
         $likeCount = random_int(1, 5);
 
-        foreach (array_slice($likers, 0, $likeCount) as $userId) {
+        foreach ($likers as $userId) {
             if ($userId === $ownerId) {
                 continue;
             }
@@ -505,6 +502,11 @@ try {
                 $postId,
                 gmdate('Y-m-d H:i:s', $likeTimestamp),
             ]);
+
+            $likeCount--;
+            if ($likeCount <= 0) {
+                break;
+            }
         }
     }
 
