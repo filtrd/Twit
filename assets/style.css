@@ -125,7 +125,7 @@ button:hover,
 }
 
 dialog {
-    width: min(320px, calc(100% - 40px));
+    width: min(420px, calc(100% - 40px));
     padding: 20px;
     border: 1px solid #ddd;
     background: #fff;
