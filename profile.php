@@ -20,14 +20,7 @@ $hasMorePosts = count($posts) > $feedPageSize;
 if ($hasMorePosts) array_pop($posts);
 
 $nextFeedCursor = null;
-if ($hasMorePosts && $posts) {
-    $lastPost = $posts[array_key_last($posts)];
-    $cursorPayload = json_encode([
-        'created_at' => $lastPost['created_at'],
-        'id' => (int)$lastPost['id'],
-    ], JSON_THROW_ON_ERROR);
-    $nextFeedCursor = rtrim(strtr(base64_encode($cursorPayload), '+/', '-_'), '=');
-}
+if ($hasMorePosts && $posts) $nextFeedCursor = encodeFeedCursor($posts[array_key_last($posts)]);
 
 $stmt = db()->prepare('SELECT COUNT(*) FROM posts WHERE user_id = ?');
 $stmt->execute([$profile['id']]);
@@ -130,6 +123,6 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
     <div class="wrap"><span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span><nav><a href="#">About</a><a href="#">Privacy</a><a href="#">Terms</a></nav></div>
 </footer>
 
-<script type="module" src="assets/js/profile.js"></script>
+<script type="module" src="assets/js/app.js"></script>
 </body>
 </html>
