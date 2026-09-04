@@ -5,6 +5,8 @@ const DB_PATH = __DIR__ . '/../data/microblog.sqlite';
 const POST_URL_LENGTH = 23;
 const POST_URL_PATTERN = '~https?://[^\s<]+~i';
 
+require_once __DIR__ . '/video.php';
+
 function db(): PDO
 {
     static $pdo = null;
@@ -110,6 +112,10 @@ function renderPostContent(string $content): string
             if ($segments) { $display .= '/' . $segments[0]; if (count($segments) > 1) $display .= '…'; }
             elseif (!empty($parsed['query']) || !empty($parsed['fragment'])) $display .= '…';
             $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . e($display) . '</a>' . e($trailing);
+
+            $video = detectVideo($trimmedUrl);
+            if ($video) $output .= renderVideoEmbed($video);
+
             $offset = $position + strlen($url);
         }
     }
