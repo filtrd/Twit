@@ -100,14 +100,43 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
     </div>
 </main>
 
+<dialog id="delete-dialog" aria-labelledby="delete-dialog-title">
+    <p id="delete-dialog-title">Delete this post?</p>
+    <form method="dialog">
+        <button type="submit" value="cancel">Cancel</button>
+        <button type="submit" value="confirm" autofocus>Delete</button>
+    </form>
+</dialog>
+
 <footer>
     <div class="wrap"><span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span><nav><a href="#">About</a><a href="#">Privacy</a><a href="#">Terms</a></nav></div>
 </footer>
 
 <script>
 const avatarUpload = document.getElementById('avatar-upload');
+const deleteDialog = document.getElementById('delete-dialog');
+let pendingDeleteForm = null;
+
 if (avatarUpload) {
     avatarUpload.addEventListener('change', () => { if (avatarUpload.files.length) avatarUpload.closest('form').submit(); });
+}
+
+document.querySelectorAll('.post-delete-form').forEach(form => {
+    form.addEventListener('submit', event => {
+        if (!deleteDialog) return;
+        event.preventDefault();
+        pendingDeleteForm = form;
+        deleteDialog.showModal();
+    });
+});
+
+if (deleteDialog) {
+    deleteDialog.addEventListener('close', () => {
+        if (deleteDialog.returnValue === 'confirm' && pendingDeleteForm) {
+            pendingDeleteForm.submit();
+        }
+        pendingDeleteForm = null;
+    });
 }
 
 document.querySelectorAll('.post-menu').forEach(menu => {
