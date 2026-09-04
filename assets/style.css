@@ -138,20 +138,19 @@ dialog p {
     font-weight: 700;
 }
 
-.dialog-actions {
+dialog form {
     display: flex;
     justify-content: center;
     column-gap: 24px;
 }
 
-.dialog-actions button {
+dialog form button {
     font-size: 10px;
 }
 
 dialog::backdrop {
     background: rgba(0, 0, 0, .2);
 }
-
 main {
     padding: 36px 0 80px;
 }
