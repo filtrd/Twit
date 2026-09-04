@@ -313,12 +313,10 @@ try {
     foreach ($userIds as $username => $userId) {
         $postCount = random_int(6, 10);
         for ($i = 0; $i < $postCount; $i++) {
-            do {
-                $topic = $userTopics[$username][array_rand($userTopics[$username])];
-                $postText = $topics[$topic]['posts'][array_rand($topics[$topic]['posts'])];
-            } while (isset($usedPostText[$postText]));
-
-            $usedPostText[$postText] = true;
+            
+            $topic = $userTopics[$username][array_rand($userTopics[$username])];
+         $postText = $topics[$topic]['posts'][array_rand($topics[$topic]['posts'])];
+            
             $posts[] = [
                 'user_id' => $userId,
                 'topic' => $topic,
