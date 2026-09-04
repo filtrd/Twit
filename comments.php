@@ -74,7 +74,7 @@ if (!$post) {
     exit('Post not found');
 }
 
-$stmt = db()->prepare('SELECT c.id, c.post_id, c.user_id, c.parent_id, c.content, c.created_at, u.username FROM comments c JOIN users u ON u.id = c.user_id WHERE c.post_id = ? ORDER BY c.id ASC');
+$stmt = db()->prepare('SELECT c.id, c.post_id, c.user_id, c.parent_id, c.content, c.created_at, u.username FROM comments c JOIN users u ON u.id = c.user_id WHERE c.post_id = ? ORDER BY c.created_at ASC, c.id ASC');
 $stmt->execute([$postId]);
 $commentRows = $stmt->fetchAll();
 $comments = [];
