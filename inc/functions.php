@@ -161,7 +161,7 @@ function renderPost(array $post, ?array $user, string $redirect = 'index'): void
             <?php if ($user && (int)$post['user_id'] === (int)$user['id'] && (can_edit_post($post, $user) || can_delete_post($post, $user))): ?>
                 <div class="post-menu"><button type="button" class="post-menu-button" aria-label="Post menu" aria-expanded="false">…</button><div class="post-menu-dropdown" hidden>
                     <?php if (can_edit_post($post, $user)): ?><a href="edit.php?post_id=<?= $postId ?><?= $redirect === 'profile' ? '&redirect=profile' : '' ?>">Edit</a><?php endif; ?>
-                    <?php if (can_delete_post($post, $user)): ?><form method="post" action="delete.php" onsubmit="return confirm('Delete this post?');"><input type="hidden" name="post_id" value="<?= $postId ?>"><?php if ($redirect === 'profile'): ?><input type="hidden" name="redirect" value="profile"><?php endif; ?><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button type="submit">Delete</button></form><?php endif; ?>
+                    <?php if (can_delete_post($post, $user)): ?><form method="post" action="delete.php" class="post-delete-form"><input type="hidden" name="post_id" value="<?= $postId ?>"><?php if ($redirect === 'profile'): ?><input type="hidden" name="redirect" value="profile"><?php endif; ?><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button type="submit">Delete</button></form><?php endif; ?>
                 </div></div>
             <?php endif; ?>
         </div>
