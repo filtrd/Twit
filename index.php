@@ -290,6 +290,8 @@ async function loadMorePosts() {
     if (feedStatus) feedStatus.hidden = false;
 
     try {
+        // Temporary delay for testing infinite-scroll pagination visibility.
+        await new Promise(resolve => setTimeout(resolve, 3000));
         const response = await fetch('feed.php?cursor=' + encodeURIComponent(cursor), { headers: { 'Accept': 'application/json' } });
         if (!response.ok) throw new Error('Feed request failed');
         const data = await response.json();
