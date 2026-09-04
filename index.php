@@ -276,6 +276,8 @@ function bindLoadedPostActions() {
 }
 
 let loadingFeed = false;
+let feedObserver = null;
+let feedObserverArmed = false;
 
 async function loadMorePosts() {
     if (!feed || loadingFeed || feed.dataset.hasMore !== '1') return;
@@ -283,6 +285,8 @@ async function loadMorePosts() {
     if (!cursor) return;
 
     loadingFeed = true;
+    feedObserverArmed = false;
+    if (feedObserver) feedObserver.disconnect();
     if (feedStatus) feedStatus.hidden = false;
 
     try {
@@ -304,13 +308,36 @@ async function loadMorePosts() {
     }
 }
 
+function armFeedObserver() {
+    if (!feedObserver || !feedSentinel || loadingFeed || feedObserverArmed || feed?.dataset.hasMore !== '1') return;
+    feedObserverArmed = true;
+    feedObserver.observe(feedSentinel);
+}
+
 bindLoadedPostActions();
 
-if (feedSentinel) {
-    const observer = new IntersectionObserver(entries => {
-        if (entries.some(entry => entry.isIntersecting)) loadMorePosts();
-    }, { rootMargin: '600px 0px' });
-    observer.observe(feedSentinel);
+if (feedSentinel && 'IntersectionObserver' in window) {
+    feedObserver = new IntersectionObserver(entries => {
+        const entry = entries[0];
+        if (!entry) return;
+
+        if (!entry.isIntersecting) {
+            feedObserverArmed = false;
+            return;
+        }
+
+        if (feedObserverArmed) {
+            feedObserverArmed = false;
+            feedObserver.disconnect();
+            loadMorePosts();
+        }
+    }, { rootMargin: '0px' });
+
+    armFeedObserver();
+
+    window.addEventListener('scroll', () => {
+        armFeedObserver();
+    }, { passive: true });
 }
 </script>
 </body>
