@@ -161,6 +161,11 @@ try {
     $postIds = [];
     $postOwners = [];
 
+    $startDate = new DateTimeImmutable('2026-02-01 00:00:00');
+    $endDate = new DateTimeImmutable('now');
+    $startTimestamp = $startDate->getTimestamp();
+    $endTimestamp = $endDate->getTimestamp();
+
     foreach ($userIds as $username => $userId) {
         $postCount = random_int(6, 10);
 
@@ -171,28 +176,22 @@ try {
 
             $usedSubjects[$username . '|' . $subject] = true;
 
-            $day = random_int(1, 28);
-            $hour = random_int(7, 21);
-            $minute = random_int(0, 59);
-            $second = random_int(0, 59);
-            $createdAt = sprintf('2026-02-%02d %02d:%02d:%02d', $day, $hour, $minute, $second);
+            $createdAt = date('Y-m-d H:i:s', random_int($startTimestamp, $endTimestamp));
+            $postText = $subject;
 
-            $postText = $subject . '. ' . $comments[array_rand($comments)];
             $insertPost->execute([$userId, $postText, $createdAt]);
 
             $postId = (int)$pdo->lastInsertId();
             $postIds[] = $postId;
             $postOwners[$postId] = $userId;
 
+            $postTimestamp = strtotime($createdAt);
             $commentCount = random_int(2, 4);
 
             for ($c = 0; $c < $commentCount; $c++) {
                 $commentUserId = $userIds[array_rand($userIds)];
-                $commentDay = $day;
-                $commentHour = min($hour + random_int(0, 3), 23);
-                $commentMinute = random_int(0, 59);
-                $commentSecond = random_int(0, 59);
-                $commentAt = sprintf('2026-02-%02d %02d:%02d:%02d', $commentDay, $commentHour, $commentMinute, $commentSecond);
+                $commentTimestamp = random_int($postTimestamp, min($postTimestamp + (7 * 86400), $endTimestamp));
+                $commentAt = date('Y-m-d H:i:s', $commentTimestamp);
 
                 $insertComment->execute([
                     $postId,
@@ -206,10 +205,8 @@ try {
 
                 if (random_int(0, 100) < 70) {
                     $replyUserId = $userIds[array_rand($userIds)];
-                    $replyHour = min($commentHour + random_int(0, 3), 23);
-                    $replyMinute = random_int(0, 59);
-                    $replySecond = random_int(0, 59);
-                    $replyAt = sprintf('2026-02-%02d %02d:%02d:%02d', $commentDay, $replyHour, $replyMinute, $replySecond);
+                    $replyTimestamp = random_int($commentTimestamp, min($commentTimestamp + (3 * 86400), $endTimestamp));
+                    $replyAt = date('Y-m-d H:i:s', $replyTimestamp);
 
                     $insertComment->execute([
                         $postId,
@@ -224,7 +221,7 @@ try {
     }
 
     $allUserIds = array_values($userIds);
-    $now = '2026-02-28 20:00:00';
+    $now = date('Y-m-d H:i:s');
 
     foreach ($allUserIds as $followerId) {
         foreach ($allUserIds as $followingId) {
