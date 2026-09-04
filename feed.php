@@ -5,7 +5,7 @@ require_once __DIR__ . '/inc/config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-$limit = 20;
+$feedPageSize = (int)$feedPageSize;
 $cursor = trim($_GET['cursor'] ?? '');
 $cursorCreatedAt = null;
 $cursorId = null;
@@ -46,12 +46,12 @@ if ($cursorCreatedAt !== null) {
     $params = [$cursorCreatedAt, $cursorId];
 }
 
-$sql .= ' ORDER BY p.created_at DESC, p.id DESC LIMIT ' . ($limit + 1);
+$sql .= ' ORDER BY p.created_at DESC, p.id DESC LIMIT ' . ($feedPageSize + 1);
 $stmt = db()->prepare($sql);
 $stmt->execute($params);
 $posts = $stmt->fetchAll();
 
-$hasMore = count($posts) > $limit;
+$hasMore = count($posts) > $feedPageSize;
 if ($hasMore) array_pop($posts);
 
 $nextCursor = null;
