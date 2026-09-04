@@ -1,3 +1,5 @@
+import { initVideoEmbeds } from './video.js';
+
 export function initFeed() {
     const feed = document.getElementById('feed');
     const feedSentinel = document.getElementById('feed-sentinel');
@@ -51,7 +53,10 @@ export function initFeed() {
             if (!response.ok) throw new Error('Feed request failed');
 
             const data = await response.json();
-            if (data.html) feed.insertAdjacentHTML('beforeend', data.html);
+            if (data.html) {
+                feed.insertAdjacentHTML('beforeend', data.html);
+                initVideoEmbeds(feed);
+            }
             feed.dataset.nextCursor = data.next_cursor || '';
             feed.dataset.hasMore = data.has_more ? '1' : '0';
             if (!data.has_more && feedStatus) feedStatus.hidden = true;
