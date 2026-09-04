@@ -135,6 +135,7 @@ dialog {
 dialog p {
     margin: 0 0 18px;
     font-size: 12px;
+    font-weight: 700;
 }
 
 .dialog-actions {
