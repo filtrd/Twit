@@ -92,6 +92,14 @@ $posts = $stmt->fetchAll();
     </div>
 </main>
 
+<dialog id="delete-dialog" aria-labelledby="delete-dialog-title">
+    <p id="delete-dialog-title">Delete this post?</p>
+    <form method="dialog">
+        <button type="submit" value="cancel">Cancel</button>
+        <button type="submit" value="confirm" autofocus>Delete</button>
+    </form>
+</dialog>
+
 <footer>
     <div class="wrap">
         <span>&copy; <?= date('Y') ?> <?= e($siteName) ?></span>
@@ -107,7 +115,9 @@ const imageUpload = document.getElementById('image-upload');
 const selectedImage = document.getElementById('selected-image');
 const emojiButton = document.getElementById('emoji-button');
 const emojiPicker = document.getElementById('emoji-picker');
+const deleteDialog = document.getElementById('delete-dialog');
 const maxPostLength = <?= (int)$maxPostLength ?>;
+let pendingDeleteForm = null;
 
 function postCharacterCount(value) {
     let count = 0;
@@ -176,6 +186,24 @@ if (emojiButton && emojiPicker) {
             updateCounter();
             emojiPicker.hidden = true;
         });
+    });
+}
+
+document.querySelectorAll('.post-delete-form').forEach(form => {
+    form.addEventListener('submit', event => {
+        if (!deleteDialog) return;
+        event.preventDefault();
+        pendingDeleteForm = form;
+        deleteDialog.showModal();
+    });
+});
+
+if (deleteDialog) {
+    deleteDialog.addEventListener('close', () => {
+        if (deleteDialog.returnValue === 'confirm' && pendingDeleteForm) {
+            pendingDeleteForm.submit();
+        }
+        pendingDeleteForm = null;
     });
 }
 
