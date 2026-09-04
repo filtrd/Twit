@@ -1,33 +1,14 @@
-function bindPostMenus() {
-    document.querySelectorAll('.post-menu:not([data-menu-bound])').forEach(menu => {
-        menu.dataset.menuBound = '1';
-        const button = menu.querySelector('.post-menu-button');
-        const dropdown = menu.querySelector('.post-menu-dropdown');
-        if (!button || !dropdown) return;
-
-        button.addEventListener('click', event => {
-            event.stopPropagation();
-            const open = !dropdown.hidden;
-            document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
-            document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
-            dropdown.hidden = open;
-            button.setAttribute('aria-expanded', String(!open));
-        });
-    });
-}
-
 export function initCommon() {
     const deleteDialog = document.getElementById('delete-dialog');
     let pendingDeleteForm = null;
 
     if (deleteDialog) {
-        document.querySelectorAll('.post-delete-form:not([data-delete-bound])').forEach(form => {
-            form.dataset.deleteBound = '1';
-            form.addEventListener('submit', event => {
-                event.preventDefault();
-                pendingDeleteForm = form;
-                deleteDialog.showModal();
-            });
+        document.addEventListener('submit', event => {
+            const form = event.target.closest('.post-delete-form');
+            if (!form) return;
+            event.preventDefault();
+            pendingDeleteForm = form;
+            deleteDialog.showModal();
         });
 
         deleteDialog.addEventListener('close', () => {
@@ -38,26 +19,22 @@ export function initCommon() {
         });
     }
 
-    bindPostMenus();
+    document.addEventListener('click', event => {
+        const button = event.target.closest('.post-menu-button');
+        if (button) {
+            event.stopPropagation();
+            const dropdown = button.closest('.post-menu')?.querySelector('.post-menu-dropdown');
+            if (!dropdown) return;
 
-    document.addEventListener('click', () => {
+            const open = !dropdown.hidden;
+            document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
+            document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
+            dropdown.hidden = open;
+            button.setAttribute('aria-expanded', String(!open));
+            return;
+        }
+
         document.querySelectorAll('.post-menu-dropdown').forEach(item => item.hidden = true);
         document.querySelectorAll('.post-menu-button').forEach(item => item.setAttribute('aria-expanded', 'false'));
     });
-
-    return {
-        bindLoadedPostActions() {
-            if (deleteDialog) {
-                document.querySelectorAll('.post-delete-form:not([data-delete-bound])').forEach(form => {
-                    form.dataset.deleteBound = '1';
-                    form.addEventListener('submit', event => {
-                        event.preventDefault();
-                        pendingDeleteForm = form;
-                        deleteDialog.showModal();
-                    });
-                });
-            }
-            bindPostMenus();
-        }
-    };
 }
