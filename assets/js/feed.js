@@ -1,4 +1,4 @@
-export function initFeed({ bindLoadedPostActions } = {}) {
+export function initFeed() {
     const feed = document.getElementById('feed');
     const feedSentinel = document.getElementById('feed-sentinel');
     const feedStatus = document.getElementById('feed-status');
@@ -6,9 +6,10 @@ export function initFeed({ bindLoadedPostActions } = {}) {
     if (!feed || !feedSentinel || !('IntersectionObserver' in window)) return;
 
     const profileUsername = feed.dataset.profileUsername || '';
-    const endpoint = profileUsername
-        ? 'profile-feed.php?u=' + encodeURIComponent(profileUsername) + '&cursor='
-        : 'feed.php?cursor=';
+    const params = new URLSearchParams();
+    if (profileUsername) params.set('u', profileUsername);
+    const endpoint = 'feed.php?' + params.toString();
+    const separator = endpoint.endsWith('?') ? '' : '&';
 
     let loadingFeed = false;
     let feedObserverArmed = true;
@@ -44,7 +45,7 @@ export function initFeed({ bindLoadedPostActions } = {}) {
         try {
             // Temporary delay for testing infinite-scroll pagination visibility.
             await new Promise(resolve => setTimeout(resolve, 3000));
-            const response = await fetch(endpoint + encodeURIComponent(cursor), {
+            const response = await fetch(endpoint + separator + 'cursor=' + encodeURIComponent(cursor), {
                 headers: { 'Accept': 'application/json' }
             });
             if (!response.ok) throw new Error('Feed request failed');
@@ -53,8 +54,6 @@ export function initFeed({ bindLoadedPostActions } = {}) {
             if (data.html) feed.insertAdjacentHTML('beforeend', data.html);
             feed.dataset.nextCursor = data.next_cursor || '';
             feed.dataset.hasMore = data.has_more ? '1' : '0';
-
-            if (bindLoadedPostActions) bindLoadedPostActions();
             if (!data.has_more && feedStatus) feedStatus.hidden = true;
         } catch (error) {
             if (feedStatus) {
@@ -63,9 +62,7 @@ export function initFeed({ bindLoadedPostActions } = {}) {
             }
         } finally {
             loadingFeed = false;
-            if (feed.dataset.hasMore === '1') {
-                observer.observe(feedSentinel);
-            }
+            if (feed.dataset.hasMore === '1') observer.observe(feedSentinel);
         }
     }
 
