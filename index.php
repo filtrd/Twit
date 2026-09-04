@@ -6,16 +6,16 @@ require_once __DIR__ . '/inc/config.php';
 $user = current_user();
 $postError = get_flash('post_error');
 $postDraft = get_flash('post_draft') ?? '';
-$feedPageSize = 20;
+$feedPageSize = (int)$feedPageSize;
 
-$stmt = db()->query(<<<'SQL'
+$stmt = db()->query(<<<SQL
 SELECT p.id, p.content, p.image_path, p.created_at, p.updated_at, p.edit_count, u.id AS user_id, u.username, u.avatar_path,
        (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
 FROM posts p
 JOIN users u ON u.id = p.user_id
 ORDER BY p.created_at DESC, p.id DESC
-LIMIT 21
+LIMIT {$feedPageSize + 1}
 SQL);
 $posts = $stmt->fetchAll();
 
@@ -105,6 +105,7 @@ if ($hasMorePosts && $posts) {
                 <p class="empty">No posts yet. Be the first!</p>
             <?php endif; ?>
         </section>
+        <div id="feed-sentinel" aria-hidden="true"></div>
         <?php if ($hasMorePosts): ?><p id="feed-status" class="empty" hidden>Loading more posts…</p><?php endif; ?>
     </div>
 </main>
@@ -134,6 +135,7 @@ const emojiButton = document.getElementById('emoji-button');
 const emojiPicker = document.getElementById('emoji-picker');
 const deleteDialog = document.getElementById('delete-dialog');
 const feed = document.getElementById('feed');
+const feedSentinel = document.getElementById('feed-sentinel');
 const feedStatus = document.getElementById('feed-status');
 const maxPostLength = <?= (int)$maxPostLength ?>;
 let pendingDeleteForm = null;
@@ -303,11 +305,11 @@ async function loadMorePosts() {
 
 bindLoadedPostActions();
 
-if (feed && feed.dataset.hasMore === '1') {
+if (feedSentinel) {
     const observer = new IntersectionObserver(entries => {
         if (entries.some(entry => entry.isIntersecting)) loadMorePosts();
     }, { rootMargin: '600px 0px' });
-    if (feedStatus) observer.observe(feedStatus);
+    observer.observe(feedSentinel);
 }
 </script>
 </body>
