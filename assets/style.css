@@ -294,7 +294,7 @@ main {
 .post-head time {
     color: #999;
     font-family: "IBM Plex Mono", monospace;
-    font-size: 9px;
+    font-size: 10px;
 }
 
 .post-author {
@@ -353,6 +353,7 @@ main {
 
 .post-content {
     padding: 8px 0;
+    font-size: 14px;
 }
 
 .post-image {
@@ -621,7 +622,7 @@ main {
     resize: vertical;
     outline: 0;
     font: inherit;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .comment-form textarea:focus,
@@ -663,12 +664,12 @@ main {
 
 .comment-head time {
     color: #888;
-    font-size: 9px;
+    font-size: 10px;
 }
 
 .comment p {
     margin: 4px 0;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.5;
 }
 
