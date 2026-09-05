@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     avatar_path TEXT,
+    location TEXT,
+    website TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -57,6 +59,14 @@ CREATE TABLE IF NOT EXISTS comments (
     FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
 );
 SQL);
+
+foreach (['location', 'website'] as $column) {
+    try {
+        $pdo->exec('ALTER TABLE users ADD COLUMN ' . $column . ' TEXT');
+    } catch (PDOException $e) {
+        if (!str_contains(strtolower($e->getMessage()), 'duplicate column name')) throw $e;
+    }
+}
 
 $pdo->exec('CREATE INDEX IF NOT EXISTS comments_post_id_idx ON comments(post_id)');
 $pdo->exec('CREATE INDEX IF NOT EXISTS comments_parent_id_idx ON comments(parent_id)');
