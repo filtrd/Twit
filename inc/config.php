@@ -9,7 +9,7 @@ $tagLine = 'Share short thoughts with the world.';
 
 // Posts
 // Maximum length allowed for a post.
-$maxPostLength = 280;
+$maxPostLength = 500;
 
 // Number of posts loaded per feed batch.
 $feedPageSize = 20;
@@ -18,7 +18,7 @@ $feedPageSize = 20;
 $postEditCount = '2';
 
 // Number of minutes after posting that editing is allowed.
-$postEditTime = '5';
+$postEditTime = '10';
 
 // Number of minutes after posting that deletion is allowed.
-$postDeleteTime = '10';
+$postDeleteTime = '12';
