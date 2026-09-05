@@ -43,7 +43,7 @@ if ($hasMorePosts && $posts) $nextFeedCursor = encodeFeedCursor($posts[array_key
         <nav>
             <a href="./">Home</a>
             <?php if ($user): ?>
-                <a href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
+                <a class="profile-link" href="profile.php?u=<?= urlencode($user['username']) ?>">@<?= e($user['username']) ?></a>
                 <form class="inline" method="post" action="logout.php">
                     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                     <button>Log out</button>
