@@ -347,6 +347,10 @@ main {
     opacity: 1;
 }
 
+.post-content {
+    padding: 6px 0 10px;
+}
+
 .post p {
     margin: 8px 0 12px;
     font-size: 14px;
