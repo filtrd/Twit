@@ -104,6 +104,10 @@ nav {
     font-size: 12px;
 }
 
+nav a[href*="profile.php"] {
+    font-weight: 700;
+}
+
 button,
 .button {
     border: 0;
