@@ -487,6 +487,7 @@ main {
     height: 150px;
     flex: 0 0 auto;
     object-fit: cover;
+    border-radius: 50%;
 }
 
 .avatar-small {
