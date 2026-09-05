@@ -158,7 +158,7 @@ function renderCommentTree(array $comments, ?int $parentId = null, int $depth = 
                 <a href="profile.php?u=<?= urlencode($comment['username']) ?>"><strong>@<?= e($comment['username']) ?></strong></a>
                 <time><?= e(formatPostDate($comment['created_at'])) ?></time>
             </div>
-            <p><?= renderPostContent($comment['content']) ?></p>
+            <div class="comment-content"><?= renderPostContent($comment['content']) ?></div>
             <?php if (current_user()): ?>
                 <button type="button" class="comment-reply-button" data-comment-id="<?= $id ?>">Reply</button>
                 <form class="comment-reply-form" method="post" action="comments.php" data-reply-form="<?= $id ?>" hidden>
@@ -199,7 +199,7 @@ function renderPost(array $post, ?array $user, string $redirect = 'index'): void
                 </div></div>
             <?php endif; ?>
         </div>
-        <?php if ($post['content'] !== ''): ?><p><?= renderPostContent($post['content']) ?></p><?php endif; ?>
+        <?php if ($post['content'] !== ''): ?><div class="post-content"><?= renderPostContent($post['content']) ?></div><?php endif; ?>
         <?php if (!empty($post['image_path'])): ?><img class="post-image" src="<?= e($post['image_path']) ?>" alt=""><?php endif; ?>
         <div class="post-actions">
             <?php if ($user): ?><form class="inline" method="post" action="like.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button type="submit" class="like-button" aria-label="<?= $isLiked ? 'Unlike post' : 'Like post' ?>" aria-pressed="<?= $isLiked ? 'true' : 'false' ?>"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg><span><?= (int)($post['like_count'] ?? 0) ?></span></button></form>
