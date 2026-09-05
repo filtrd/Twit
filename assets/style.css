@@ -67,12 +67,12 @@ a:hover {
 }
 
 .topbar {
+    padding: 32px 0;
     background: #fff;
     border-bottom: 1px solid #ddd;
 }
 
 .topbar .wrap {
-    min-height: 72px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -787,8 +787,8 @@ footer nav {
         width: calc(100% - 24px);
     }
 
-    .topbar .wrap {
-        min-height: 64px;
+    .topbar {
+        padding: 24px 0;
     }
 
     nav {
