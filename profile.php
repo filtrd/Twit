@@ -3,8 +3,41 @@ declare(strict_types=1);
 require_once __DIR__ . '/inc/database.php';
 require_once __DIR__ . '/inc/config.php';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update-profile-detail') {
+    header('Content-Type: application/json; charset=utf-8');
+    $user = require_login();
+    verify_csrf();
+
+    $field = $_POST['field'] ?? '';
+    $value = trim((string)($_POST['value'] ?? ''));
+
+    if ($field === 'location') {
+        if (mb_strlen($value) > 100) {
+            http_response_code(422);
+            echo json_encode(['error' => 'Location is too long.']);
+            exit;
+        }
+    } elseif ($field === 'website') {
+        $value = preg_replace('~^https?://~i', '', $value);
+        if ($value !== '' && (strlen($value) > 253 || !preg_match('~^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$~', $value))) {
+            http_response_code(422);
+            echo json_encode(['error' => 'Enter a valid website hostname, such as example.com.']);
+            exit;
+        }
+    } else {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid profile field.']);
+        exit;
+    }
+
+    $stmt = db()->prepare("UPDATE users SET {$field} = NULLIF(?, '') WHERE id = ?");
+    $stmt->execute([$value, $user['id']]);
+    echo json_encode(['field' => $field, 'value' => $value]);
+    exit;
+}
+
 $username = trim($_GET['u'] ?? '');
-$stmt = db()->prepare('SELECT id, username, avatar_path, created_at FROM users WHERE username = ?');
+$stmt = db()->prepare('SELECT id, username, avatar_path, location, website, created_at FROM users WHERE username = ?');
 $stmt->execute([$username]);
 $profile = $stmt->fetch();
 if (!$profile) { http_response_code(404); exit('User not found'); }
@@ -50,6 +83,7 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>@<?= e($profile['username']) ?> · <?= e($siteName) ?></title>
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/profile.css">
 </head>
 <body>
 <header class="topbar">
@@ -91,6 +125,19 @@ $avatarError = trim($_GET['avatar_error'] ?? '');
                     </div>
                     <p>Joined <?= date('M Y', strtotime($profile['created_at'])) ?></p>
                     <p><?= $postCount ?> Posts &middot; <?= $followerCount ?> Followers &middot; <?= $followingCount ?> Following</p>
+                    <div class="profile-details">
+                        <div class="profile-detail" data-profile-detail="location" data-value="<?= e($profile['location'] ?? '') ?>">
+                            <span aria-hidden="true">📍</span>
+                            <span class="profile-detail-value"><?= $profile['location'] !== null && $profile['location'] !== '' ? e($profile['location']) : 'Add location' ?></span>
+                            <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?><button type="button" class="profile-detail-edit" aria-label="Edit location">✎</button><?php endif; ?>
+                        </div>
+                        <div class="profile-detail" data-profile-detail="website" data-value="<?= e($profile['website'] ?? '') ?>">
+                            <span aria-hidden="true">🌐</span>
+                            <?php if (!empty($profile['website'])): ?><a class="profile-detail-value" href="https://<?= e($profile['website']) ?>" target="_blank" rel="noopener noreferrer"><?= e($profile['website']) ?></a>
+                            <?php else: ?><span class="profile-detail-value">Add website</span><?php endif; ?>
+                            <?php if ($user && (int)$user['id'] === (int)$profile['id']): ?><button type="button" class="profile-detail-edit" aria-label="Edit website">✎</button><?php endif; ?>
+                        </div>
+                    </div>
                     <?php if ($user && (int)$user['id'] !== (int)$profile['id']): ?>
                         <form class="follow-form" method="post" action="follow.php"><input type="hidden" name="user_id" value="<?= (int)$profile['id'] ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button class="button"><?= $isFollowing ? 'Following' : 'Follow' ?></button></form>
                     <?php endif; ?>
