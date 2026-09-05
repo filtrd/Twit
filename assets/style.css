@@ -104,7 +104,7 @@ nav {
     font-size: 12px;
 }
 
-nav a[href*="profile.php"] {
+.profile-link {
     font-weight: 700;
 }
 
@@ -732,71 +732,48 @@ input:focus {
 .error {
     margin-bottom: 16px;
     padding: 10px;
-    background: #fff4f4;
+    border: 1px solid #ddd;
     color: #900;
     font-size: 10px;
 }
 
 .empty {
     padding: 40px 0;
-    text-align: center;
     color: #777;
     font-size: 10px;
+    text-align: center;
 }
 
 .profile {
     padding: 0 0 24px;
     margin-bottom: 0;
-    border: 0;
     border-bottom: 1px solid #ddd;
-    background: transparent;
 }
 
 .profile h1 {
     margin: 0 0 4px;
-    font-size: 14px;
-    line-height: 1.25;
-}
-
-.profile p {
-    margin: 0;
-    color: #777;
-    font-size: 10px;
 }
 
 .profile-stats {
     display: flex;
     gap: 20px;
     margin-top: 12px;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 10px;
-}
-
-.profile-stats strong {
-    margin-right: 4px;
 }
 
 .profile-actions {
     margin-top: 12px;
 }
 
-.profile-actions .button {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 10px;
-}
-
 footer {
     padding: 24px 0;
-    border-top: 1px solid #ddd;
     color: #777;
-    font-family: "IBM Plex Mono", monospace;
     font-size: 10px;
 }
 
 footer .wrap {
     display: flex;
     justify-content: space-between;
-    gap: 20px;
+    align-items: center;
 }
 
 footer nav {
@@ -806,7 +783,7 @@ footer nav {
 
 @media (max-width: 600px) {
     .wrap {
-        width: min(100% - 24px, 640px);
+        width: calc(100% - 24px);
     }
 
     .topbar .wrap {
@@ -823,5 +800,7 @@ footer nav {
 
     footer .wrap {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
     }
 }
