@@ -104,17 +104,20 @@ function renderPostContent(string $content): string
             $output .= e(substr($content, $offset, $position - $offset));
             $trimmedUrl = rtrim($url, '.,!?;:)]}');
             $trailing = substr($url, strlen($trimmedUrl));
-            $parsed = parse_url($trimmedUrl);
-            $host = preg_replace('~^www\\.~i', '', $parsed['host'] ?? $trimmedUrl);
-            $path = trim($parsed['path'] ?? '', '/');
-            $segments = $path === '' ? [] : explode('/', $path);
-            $display = $host;
-            if ($segments) { $display .= '/' . $segments[0]; if (count($segments) > 1) $display .= '…'; }
-            elseif (!empty($parsed['query']) || !empty($parsed['fragment'])) $display .= '…';
-            $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . e($display) . '</a>' . e($trailing);
-
             $video = detectVideo($trimmedUrl);
-            if ($video) $output .= renderVideoEmbed($video);
+
+            if ($video) {
+                $output .= renderVideoEmbed($video) . e($trailing);
+            } else {
+                $parsed = parse_url($trimmedUrl);
+                $host = preg_replace('~^www\\.~i', '', $parsed['host'] ?? $trimmedUrl);
+                $path = trim($parsed['path'] ?? '', '/');
+                $segments = $path === '' ? [] : explode('/', $path);
+                $display = $host;
+                if ($segments) { $display .= '/' . $segments[0]; if (count($segments) > 1) $display .= '…'; }
+                elseif (!empty($parsed['query']) || !empty($parsed['fragment'])) $display .= '…';
+                $output .= '<a class="post-link" href="' . e($trimmedUrl) . '" target="_blank" rel="noopener noreferrer">' . e($display) . '</a>' . e($trailing);
+            }
 
             $offset = $position + strlen($url);
         }
@@ -200,7 +203,7 @@ function renderPost(array $post, ?array $user, string $redirect = 'index'): void
         <?php if (!empty($post['image_path'])): ?><img class="post-image" src="<?= e($post['image_path']) ?>" alt=""><?php endif; ?>
         <div class="post-actions">
             <?php if ($user): ?><form class="inline" method="post" action="like.php"><input type="hidden" name="post_id" value="<?= $postId ?>"><input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>"><button type="submit" class="like-button" aria-label="<?= $isLiked ? 'Unlike post' : 'Like post' ?>" aria-pressed="<?= $isLiked ? 'true' : 'false' ?>"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg><span><?= (int)($post['like_count'] ?? 0) ?></span></button></form>
-            <?php else: ?><span class="like-count"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg><span><?= (int)($post['like_count'] ?? 0) ?></span></span><?php endif; ?>
+            <?php else: ?><span class="like-count"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0 7.78z"></path></svg><span><?= (int)($post['like_count'] ?? 0) ?></span></span><?php endif; ?>
             <a class="comment-toggle" href="<?= e($commentUrl) ?>" aria-label="View comments"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-9 8.5 9.17 9.17 0 0 1-4-.9L3 21l1.9-4.7A8.38 8.38 0 0 1 3 11.5 8.38 8.38 0 0 1 12 3a8.38 8.38 0 0 1 9 8.5z"></path></svg><span><?= (int)($post['comment_count'] ?? 0) ?></span></a>
             <?php if (!empty($post['updated_at'])): ?><span class="post-edited">Edited: <?= e(date('M j, Y H:i', strtotime($post['updated_at']))) ?></span><?php endif; ?>
         </div>
